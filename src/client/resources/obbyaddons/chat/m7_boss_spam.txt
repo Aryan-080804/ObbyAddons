@@ -1,0 +1,23 @@
+M7_BOSS_SPAM_TEST
+[BOSS] Wither King:
+[BOSS] Necron: 
+[BOSS] Goldor: 
+Goldor's Frenzy hit you 
+Necron's Nuclear Frenzy hit you 
+[BOSS] Storm: 
++5 Kill Combo +3%  Magic Find
++10 Kill Combo +10 coins per kill
++15 Kill Combo +3%  Magic Find
++20 Kill Combo +15☯ Combat Wisdom
++25 Kill Combo +3%  Magic Find
++30 Kill Combo +10 coins per kill
+Storm's Static Field hit you 
+[BOSS] Maxor: 
+Rapid Fire is ready to use! Press DROP to activate it!
+You summoned your 
+This ability is on cooldown for 
+Archer
+Tank
+Berserker
+Healer
+Mage
