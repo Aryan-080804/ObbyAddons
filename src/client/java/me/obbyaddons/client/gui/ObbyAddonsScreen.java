@@ -16,7 +16,6 @@ public final class ObbyAddonsScreen extends Screen {
 
     private static final int HEADER_HEIGHT = 18;
     private static final int ROW_HEIGHT = 17;
-
     private static final int PANEL_GAP = 8;
 
     private static final int DUNGEON_X =
@@ -33,8 +32,11 @@ public final class ObbyAddonsScreen extends Screen {
     private static final int TEXT = 0xFFFFFFFF;
 
     private Feature hoveredFeature;
+
     private ChatCleanerSettingsWindow chatCleanerSettingsWindow;
     private StormSettingsWindow stormSettingsWindow;
+    private ExplosiveArrowSettingsWindow explosiveArrowSettingsWindow;
+
     private EditBox searchBox;
 
     public ObbyAddonsScreen() {
@@ -52,8 +54,11 @@ public final class ObbyAddonsScreen extends Screen {
         int textBoxWidth = 200;
         int textBoxHeight = this.font.lineHeight;
 
-        int textX = frameX + (frameWidth - textBoxWidth) / 2;
-        int textY = frameY + (frameHeight - textBoxHeight) / 2;
+        int textX =
+                frameX + (frameWidth - textBoxWidth) / 2;
+
+        int textY =
+                frameY + (frameHeight - textBoxHeight) / 2;
 
         searchBox = new EditBox(
                 this.font,
@@ -64,7 +69,10 @@ public final class ObbyAddonsScreen extends Screen {
                 Component.literal("Search")
         );
 
-        searchBox.setHint(Component.literal("Search features..."));
+        searchBox.setHint(
+                Component.literal("Search features...")
+        );
+
         searchBox.setMaxLength(50);
         searchBox.setBordered(false);
         searchBox.setTextColor(0xFFFFFFFF);
@@ -80,93 +88,145 @@ public final class ObbyAddonsScreen extends Screen {
             int mouseY,
             float delta
     ) {
-        // Draw themed search background BEFORE Minecraft draws the EditBox
-        if (searchBox != null) {
-            int frameWidth = 220;
-            int frameHeight = 26;
+        drawSearchBackground(graphics);
 
-            int frameX = (this.width - frameWidth) / 2;
-            int frameY = this.height - 34;
-
-            graphics.fill(
-                    frameX - 3,
-                    frameY,
-                    frameX + frameWidth + 3,
-                    frameY + frameHeight,
-                    0xF0181818
-            );
-
-            graphics.fill(
-                    frameX - 3,
-                    frameY,
-                    frameX + frameWidth + 3,
-                    frameY + 3,
-                    PURPLE
-            );
-        }
-
-        // Now Minecraft draws the search text on TOP
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.extractRenderState(
+                graphics,
+                mouseX,
+                mouseY,
+                delta
+        );
 
         hoveredFeature = null;
 
-        Feature chatCleaner = FeatureManager.getFeature("Chat Cleaner");
-        Feature stormFeatures = FeatureManager.getFeature("Storm Features");
+        Feature chatCleaner =
+                FeatureManager.getFeature("Chat Cleaner");
 
-        String search = "";
+        Feature stormFeatures =
+                FeatureManager.getFeature("Storm Features");
 
-        if (searchBox != null) {
-            search = searchBox.getValue().trim().toLowerCase();
-        }
+        Feature explosiveArrow =
+                FeatureManager.getFeature("Explosive Arrow");
+
+        String search = getSearchText();
 
         boolean showChatCleaner =
-                chatCleaner != null &&
+                matchesSearch(chatCleaner, search);
+
+        boolean showStormFeatures =
+                matchesSearch(stormFeatures, search);
+
+        boolean showExplosiveArrow =
+                matchesSearch(explosiveArrow, search) ||
+                        (
+                                explosiveArrow != null &&
+                                "damage tracker".contains(search)
+                        );
+
+        drawGeneralPanel(
+                graphics,
+                mouseX,
+                mouseY,
+                chatCleaner,
+                showChatCleaner
+        );
+
+        drawDungeonPanel(
+                graphics,
+                mouseX,
+                mouseY,
+                stormFeatures,
+                explosiveArrow,
+                showStormFeatures,
+                showExplosiveArrow
+        );
+
+        drawSettingsWindows(
+                graphics,
+                mouseX,
+                mouseY
+        );
+    }
+
+    private void drawSearchBackground(
+            GuiGraphicsExtractor graphics
+    ) {
+        if (searchBox == null) {
+            return;
+        }
+
+        int frameWidth = 220;
+        int frameHeight = 26;
+
+        int frameX =
+                (this.width - frameWidth) / 2;
+
+        int frameY =
+                this.height - 34;
+
+        graphics.fill(
+                frameX - 3,
+                frameY,
+                frameX + frameWidth + 3,
+                frameY + frameHeight,
+                0xF0181818
+        );
+
+        graphics.fill(
+                frameX - 3,
+                frameY,
+                frameX + frameWidth + 3,
+                frameY + 3,
+                PURPLE
+        );
+    }
+
+    private String getSearchText() {
+        if (searchBox == null) {
+            return "";
+        }
+
+        return searchBox
+                .getValue()
+                .trim()
+                .toLowerCase();
+    }
+
+    private boolean matchesSearch(
+            Feature feature,
+            String search
+    ) {
+        return feature != null &&
                 (
                         search.isEmpty() ||
-                        chatCleaner.getName()
+                        feature
+                                .getName()
                                 .toLowerCase()
                                 .contains(search)
                 );
+    }
 
-        int featureCount = showChatCleaner ? 1 : 0;
-        int panelHeight = HEADER_HEIGHT + (featureCount * ROW_HEIGHT);
+    private void drawGeneralPanel(
+            GuiGraphicsExtractor graphics,
+            int mouseX,
+            int mouseY,
+            Feature chatCleaner,
+            boolean showChatCleaner
+    ) {
+        int featureCount =
+                showChatCleaner ? 1 : 0;
 
-        // Main panel
-        graphics.fill(
+        int panelHeight =
+                HEADER_HEIGHT +
+                        (featureCount * ROW_HEIGHT);
+
+        drawPanelBase(
+                graphics,
                 PANEL_X,
                 PANEL_Y,
-                PANEL_X + PANEL_WIDTH,
-                PANEL_Y + panelHeight,
-                PANEL_BACKGROUND
-        );
-
-        // Purple top accent
-        graphics.fill(
-                PANEL_X,
-                PANEL_Y,
-                PANEL_X + PANEL_WIDTH,
-                PANEL_Y + 2,
-                PURPLE
-        );
-
-        // Header
-        graphics.fill(
-                PANEL_X,
-                PANEL_Y + 2,
-                PANEL_X + PANEL_WIDTH,
-                PANEL_Y + HEADER_HEIGHT,
-                HEADER_BACKGROUND
-        );
-
-        String title = "GENERAL";
-
-        graphics.text(
-                this.font,
-                title,
-                PANEL_X + (PANEL_WIDTH - this.font.width(title)) / 2,
-                PANEL_Y + 6,
-                TEXT,
-                true
+                PANEL_WIDTH,
+                panelHeight,
+                "GENERAL"
         );
 
         if (showChatCleaner) {
@@ -179,78 +239,108 @@ public final class ObbyAddonsScreen extends Screen {
                     mouseY
             );
         }
-        // Dungeons panel
-        int dungeonFeatureCount = stormFeatures != null ? 1 : 0;
-        int dungeonPanelHeight =
-                HEADER_HEIGHT + (dungeonFeatureCount * ROW_HEIGHT);
+    }
 
-        graphics.fill(
-                DUNGEON_X,
-                PANEL_Y,
-                DUNGEON_X + PANEL_WIDTH,
-                PANEL_Y + dungeonPanelHeight,
-                PANEL_BACKGROUND
-        );
+    private void drawDungeonPanel(
+            GuiGraphicsExtractor graphics,
+            int mouseX,
+            int mouseY,
+            Feature stormFeatures,
+            Feature explosiveArrow,
+            boolean showStormFeatures,
+            boolean showExplosiveArrow
+    ) {
+        int featureCount = 0;
 
-        // Purple accent line
-        graphics.fill(
-                DUNGEON_X,
-                PANEL_Y,
-                DUNGEON_X + PANEL_WIDTH,
-                PANEL_Y + 2,
-                PURPLE
-        );
-
-        // Header
-        graphics.fill(
-                DUNGEON_X,
-                PANEL_Y + 2,
-                DUNGEON_X + PANEL_WIDTH,
-                PANEL_Y + HEADER_HEIGHT,
-                HEADER_BACKGROUND
-        );
-
-        String dungeonTitle = "DUNGEONS";
-
-        graphics.text(
-                this.font,
-                dungeonTitle,
-                DUNGEON_X + (PANEL_WIDTH - this.font.width(dungeonTitle)) / 2,
-                PANEL_Y + 6,
-                TEXT,
-                true
-        );
-
-        if (chatCleanerSettingsWindow != null) {
-            chatCleanerSettingsWindow.render(
-                    this,
-                    graphics,
-                    mouseX,
-                    mouseY
-            );
-        }
-        
-        if (stormSettingsWindow != null) {
-            stormSettingsWindow.render(
-                    this,
-                    graphics,
-                    mouseX,
-                    mouseY
-            );
+        if (showStormFeatures) {
+            featureCount++;
         }
 
-        if (stormFeatures != null) {
+        if (showExplosiveArrow) {
+            featureCount++;
+        }
+
+        int panelHeight =
+                HEADER_HEIGHT +
+                        (featureCount * ROW_HEIGHT);
+
+        drawPanelBase(
+                graphics,
+                DUNGEON_X,
+                PANEL_Y,
+                PANEL_WIDTH,
+                panelHeight,
+                "DUNGEONS"
+        );
+
+        int rowY =
+                PANEL_Y + HEADER_HEIGHT;
+
+        if (showStormFeatures) {
             drawFeatureRow(
                     graphics,
                     stormFeatures,
                     DUNGEON_X,
-                    PANEL_Y + HEADER_HEIGHT,
+                    rowY,
+                    mouseX,
+                    mouseY
+            );
+
+            rowY += ROW_HEIGHT;
+        }
+
+        if (showExplosiveArrow) {
+            drawFeatureRow(
+                    graphics,
+                    explosiveArrow,
+                    DUNGEON_X,
+                    rowY,
                     mouseX,
                     mouseY
             );
         }
+    }
 
-        
+    private void drawPanelBase(
+            GuiGraphicsExtractor graphics,
+            int x,
+            int y,
+            int width,
+            int height,
+            String title
+    ) {
+        graphics.fill(
+                x,
+                y,
+                x + width,
+                y + height,
+                PANEL_BACKGROUND
+        );
+
+        graphics.fill(
+                x,
+                y,
+                x + width,
+                y + 2,
+                PURPLE
+        );
+
+        graphics.fill(
+                x,
+                y + 2,
+                x + width,
+                y + HEADER_HEIGHT,
+                HEADER_BACKGROUND
+        );
+
+        graphics.text(
+                this.font,
+                title,
+                x + (width - this.font.width(title)) / 2,
+                y + 6,
+                TEXT,
+                true
+        );
     }
 
     private void drawFeatureRow(
@@ -261,6 +351,10 @@ public final class ObbyAddonsScreen extends Screen {
             int mouseX,
             int mouseY
     ) {
+        if (feature == null) {
+            return;
+        }
+
         boolean hovered =
                 mouseX >= x &&
                 mouseX < x + PANEL_WIDTH &&
@@ -309,121 +403,274 @@ public final class ObbyAddonsScreen extends Screen {
         }
     }
 
-    @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-
+    private void drawSettingsWindows(
+            GuiGraphicsExtractor graphics,
+            int mouseX,
+            int mouseY
+    ) {
         if (chatCleanerSettingsWindow != null) {
-
-            // Close button
-            if (event.button() == 0 &&
-                    chatCleanerSettingsWindow.isCloseButtonHovered(
-                            event.x(),
-                            event.y()
-                    )) {
-
-                chatCleanerSettingsWindow = null;
-                return true;
-            }
-
-            // Click settings like Dungeon Spam / M7 Boss Spam
-            if (chatCleanerSettingsWindow.handleClick(
-                    event.x(),
-                    event.y(),
-                    event.button()
-            )) {
-                return true;
-            }
-
-            // Start dragging when clicking the header
-            if (event.button() == 0 &&
-                    chatCleanerSettingsWindow.isHeaderHovered(
-                            event.x(),
-                            event.y()
-                    )) {
-
-                chatCleanerSettingsWindow.startDragging(
-                        event.x(),
-                        event.y()
-                );
-
-                return true;
-            }
+            chatCleanerSettingsWindow.render(
+                    this,
+                    graphics,
+                    mouseX,
+                    mouseY
+            );
         }
 
         if (stormSettingsWindow != null) {
+            stormSettingsWindow.render(
+                    this,
+                    graphics,
+                    mouseX,
+                    mouseY
+            );
+        }
 
-            if (event.button() == 0 &&
-                    stormSettingsWindow.isCloseButtonHovered(
-                            event.x(),
-                            event.y()
-                    )) {
+        if (explosiveArrowSettingsWindow != null) {
+            explosiveArrowSettingsWindow.render(
+                    this,
+                    graphics,
+                    mouseX,
+                    mouseY
+            );
+        }
+    }
 
-                stormSettingsWindow = null;
-                return true;
-            }
+    @Override
+    public boolean mouseClicked(
+            MouseButtonEvent event,
+            boolean doubleClick
+    ) {
+        if (handleChatCleanerWindowClick(event)) {
+            return true;
+        }
 
-            if (stormSettingsWindow.handleClick(
-                    event.x(),
-                    event.y(),
-                    event.button()
-            )) {
-                return true;
-            }
+        if (handleStormWindowClick(event)) {
+            return true;
+        }
 
-            if (event.button() == 0 &&
-                    stormSettingsWindow.isHeaderHovered(
-                            event.x(),
-                            event.y()
-                    )) {
-
-                stormSettingsWindow.startDragging(
-                        event.x(),
-                        event.y()
-                );
-
-                return true;
-            }
-        }   
+        if (handleExplosiveArrowWindowClick(event)) {
+            return true;
+        }
 
         if (hoveredFeature != null) {
 
+            // Left click = toggle entire feature
             if (event.button() == 0) {
                 hoveredFeature.toggle();
                 return true;
             }
 
-            if (event.button() == 1 &&
-                    hoveredFeature.getName().equals("Chat Cleaner")) {
+            // Right click = open settings
+            if (event.button() == 1) {
 
-                int windowWidth = 145;
-                int windowHeight = 82;
+                String name =
+                        hoveredFeature.getName();
 
-                int centerX = (this.width - windowWidth) / 2;
-                int centerY = (this.height - windowHeight) / 2;
+                if (name.equals("Chat Cleaner")) {
+                    openChatCleanerWindow();
+                    return true;
+                }
 
-                chatCleanerSettingsWindow =
-                        new ChatCleanerSettingsWindow(centerX, centerY);
+                if (name.equals("Storm Features")) {
+                    openStormWindow();
+                    return true;
+                }
 
-                return true;
-            }
-
-            if (event.button() == 1 &&
-                    hoveredFeature.getName().equals("Storm Features")) {
-
-                int windowWidth = 190;
-                int windowHeight = 260;
-
-                int centerX = (this.width - windowWidth) / 2;
-                int centerY = (this.height - windowHeight) / 2;
-
-                stormSettingsWindow =
-                        new StormSettingsWindow(centerX, centerY);
-
-                return true;
+                if (name.equals("Explosive Arrow")) {
+                    openExplosiveArrowWindow();
+                    return true;
+                }
             }
         }
 
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(
+                event,
+                doubleClick
+        );
+    }
+
+    private boolean handleChatCleanerWindowClick(
+            MouseButtonEvent event
+    ) {
+        if (chatCleanerSettingsWindow == null) {
+            return false;
+        }
+
+        if (event.button() == 0 &&
+                chatCleanerSettingsWindow
+                        .isCloseButtonHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+            chatCleanerSettingsWindow = null;
+            return true;
+        }
+
+        if (chatCleanerSettingsWindow.handleClick(
+                event.x(),
+                event.y(),
+                event.button()
+        )) {
+            return true;
+        }
+
+        if (event.button() == 0 &&
+                chatCleanerSettingsWindow
+                        .isHeaderHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+            chatCleanerSettingsWindow.startDragging(
+                    event.x(),
+                    event.y()
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleStormWindowClick(
+            MouseButtonEvent event
+    ) {
+        if (stormSettingsWindow == null) {
+            return false;
+        }
+
+        if (event.button() == 0 &&
+                stormSettingsWindow
+                        .isCloseButtonHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+            stormSettingsWindow = null;
+            return true;
+        }
+
+        if (stormSettingsWindow.handleClick(
+                event.x(),
+                event.y(),
+                event.button()
+        )) {
+            return true;
+        }
+
+        if (event.button() == 0 &&
+                stormSettingsWindow
+                        .isHeaderHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+            stormSettingsWindow.startDragging(
+                    event.x(),
+                    event.y()
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleExplosiveArrowWindowClick(
+            MouseButtonEvent event
+    ) {
+        if (explosiveArrowSettingsWindow == null) {
+            return false;
+        }
+
+        if (event.button() == 0 &&
+                explosiveArrowSettingsWindow
+                        .isCloseButtonHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+            explosiveArrowSettingsWindow = null;
+            return true;
+        }
+
+        if (explosiveArrowSettingsWindow.handleClick(
+                event.x(),
+                event.y(),
+                event.button()
+        )) {
+            return true;
+        }
+
+        if (event.button() == 0 &&
+                explosiveArrowSettingsWindow
+                        .isHeaderHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+            explosiveArrowSettingsWindow.startDragging(
+                    event.x(),
+                    event.y()
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void openChatCleanerWindow() {
+        int windowWidth = 145;
+        int windowHeight = 82;
+
+        int centerX =
+                (this.width - windowWidth) / 2;
+
+        int centerY =
+                (this.height - windowHeight) / 2;
+
+        chatCleanerSettingsWindow =
+                new ChatCleanerSettingsWindow(
+                        centerX,
+                        centerY
+                );
+    }
+
+    private void openStormWindow() {
+        int windowWidth = 190;
+        int windowHeight = 200;
+
+        int centerX =
+                (this.width - windowWidth) / 2;
+
+        int centerY =
+                (this.height - windowHeight) / 2;
+
+        stormSettingsWindow =
+                new StormSettingsWindow(
+                        centerX,
+                        centerY
+                );
+    }
+
+    private void openExplosiveArrowWindow() {
+        int windowWidth = 190;
+        int windowHeight = 60;
+
+        int centerX =
+                (this.width - windowWidth) / 2;
+
+        int centerY =
+                (this.height - windowHeight) / 2;
+
+        explosiveArrowSettingsWindow =
+                new ExplosiveArrowSettingsWindow(
+                        centerX,
+                        centerY
+                );
     }
 
     @Override
@@ -443,7 +690,6 @@ public final class ObbyAddonsScreen extends Screen {
             return true;
         }
 
-        // Drag Storm LB slider
         if (stormSettingsWindow != null &&
                 stormSettingsWindow.isSliderDragging()) {
 
@@ -454,11 +700,21 @@ public final class ObbyAddonsScreen extends Screen {
             return true;
         }
 
-        // Drag Storm settings window
         if (stormSettingsWindow != null &&
                 stormSettingsWindow.isDragging()) {
 
             stormSettingsWindow.dragTo(
+                    event.x(),
+                    event.y()
+            );
+
+            return true;
+        }
+
+        if (explosiveArrowSettingsWindow != null &&
+                explosiveArrowSettingsWindow.isDragging()) {
+
+            explosiveArrowSettingsWindow.dragTo(
                     event.x(),
                     event.y()
             );
@@ -474,8 +730,9 @@ public final class ObbyAddonsScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-
+    public boolean mouseReleased(
+            MouseButtonEvent event
+    ) {
         if (chatCleanerSettingsWindow != null &&
                 chatCleanerSettingsWindow.isDragging()) {
 
@@ -483,7 +740,6 @@ public final class ObbyAddonsScreen extends Screen {
             return true;
         }
 
-        // Stop dragging the Storm LB slider
         if (stormSettingsWindow != null &&
                 stormSettingsWindow.isSliderDragging()) {
 
@@ -491,11 +747,17 @@ public final class ObbyAddonsScreen extends Screen {
             return true;
         }
 
-        // Stop dragging the Storm settings window
         if (stormSettingsWindow != null &&
                 stormSettingsWindow.isDragging()) {
 
             stormSettingsWindow.stopDragging();
+            return true;
+        }
+
+        if (explosiveArrowSettingsWindow != null &&
+                explosiveArrowSettingsWindow.isDragging()) {
+
+            explosiveArrowSettingsWindow.stopDragging();
             return true;
         }
 

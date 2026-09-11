@@ -1,7 +1,9 @@
 package me.obbyaddons.client.gui;
 
 import me.obbyaddons.client.config.ObbyConfig;
+import me.obbyaddons.client.features.dungeon.ExplosiveArrowSettings;
 import me.obbyaddons.client.features.dungeon.StormSettings;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -11,7 +13,10 @@ public final class HudEditorScreen extends Screen {
 
     private static final String STORM_PREVIEW_TEXT = "25.35";
     private static final String DEATH_PREVIEW_TEXT = "41.30";
-    private static final String LB_PREVIEW_TEXT = "3.00";
+    private static final String LB_PREVIEW_TEXT = "5.00";
+
+    private static final String EXPLOSIVE_ARROW_PREVIEW_TEXT =
+            "Explosive Arrow: 74,586,293";
 
     private static final int PURPLE = 0xFF7C3AED;
     private static final int SELECTED_BACKGROUND = 0x553B0764;
@@ -19,6 +24,7 @@ public final class HudEditorScreen extends Screen {
     private boolean draggingStormTimer = false;
     private boolean draggingDeathTimer = false;
     private boolean draggingLbTimer = false;
+    private boolean draggingExplosiveArrow = false;
 
     private double dragOffsetX;
     private double dragOffsetY;
@@ -34,13 +40,39 @@ public final class HudEditorScreen extends Screen {
             int mouseY,
             float delta
     ) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.extractRenderState(
+                graphics,
+                mouseX,
+                mouseY,
+                delta
+        );
 
-        drawStormTimerPreview(graphics, mouseX, mouseY);
-        drawDeathTimerPreview(graphics, mouseX, mouseY);
-        drawLbTimerPreview(graphics, mouseX, mouseY);
+        drawStormTimerPreview(
+                graphics,
+                mouseX,
+                mouseY
+        );
 
-        String help = "Drag to move • Scroll to resize";
+        drawDeathTimerPreview(
+                graphics,
+                mouseX,
+                mouseY
+        );
+
+        drawLbTimerPreview(
+                graphics,
+                mouseX,
+                mouseY
+        );
+
+        drawExplosiveArrowPreview(
+                graphics,
+                mouseX,
+                mouseY
+        );
+
+        String help =
+                "Drag to move • Scroll to resize";
 
         graphics.text(
                 this.font,
@@ -51,6 +83,10 @@ public final class HudEditorScreen extends Screen {
                 true
         );
     }
+
+    // =========================
+    // PREVIEWS
+    // =========================
 
     private void drawStormTimerPreview(
             GuiGraphicsExtractor graphics,
@@ -106,6 +142,24 @@ public final class HudEditorScreen extends Screen {
         );
     }
 
+    private void drawExplosiveArrowPreview(
+            GuiGraphicsExtractor graphics,
+            int mouseX,
+            int mouseY
+    ) {
+        drawHudPreview(
+                graphics,
+                EXPLOSIVE_ARROW_PREVIEW_TEXT,
+                ExplosiveArrowSettings.damageTrackerX,
+                ExplosiveArrowSettings.damageTrackerY,
+                ExplosiveArrowSettings.damageTrackerScale,
+                ExplosiveArrowSettings.damageTrackerColor,
+                mouseX,
+                mouseY,
+                draggingExplosiveArrow
+        );
+    }
+
     private void drawHudPreview(
             GuiGraphicsExtractor graphics,
             String text,
@@ -117,14 +171,21 @@ public final class HudEditorScreen extends Screen {
             int mouseY,
             boolean dragging
     ) {
-        int normalWidth = this.font.width(text);
-        int normalHeight = this.font.lineHeight;
+        int normalWidth =
+                this.font.width(text);
+
+        int normalHeight =
+                this.font.lineHeight;
 
         int scaledWidth =
-                Math.round(normalWidth * scale);
+                Math.round(
+                        normalWidth * scale
+                );
 
         int scaledHeight =
-                Math.round(normalHeight * scale);
+                Math.round(
+                        normalHeight * scale
+                );
 
         boolean hovered =
                 mouseX >= x &&
@@ -144,7 +205,10 @@ public final class HudEditorScreen extends Screen {
 
         graphics.pose().pushMatrix();
 
-        graphics.pose().translate(x, y);
+        graphics.pose().translate(
+                x,
+                y
+        );
 
         graphics.pose().scale(
                 scale,
@@ -172,6 +236,10 @@ public final class HudEditorScreen extends Screen {
             );
         }
     }
+
+    // =========================
+    // HOVER CHECKS
+    // =========================
 
     private boolean isStormTimerHovered(
             double mouseX,
@@ -215,6 +283,20 @@ public final class HudEditorScreen extends Screen {
         );
     }
 
+    private boolean isExplosiveArrowHovered(
+            double mouseX,
+            double mouseY
+    ) {
+        return isHudHovered(
+                EXPLOSIVE_ARROW_PREVIEW_TEXT,
+                ExplosiveArrowSettings.damageTrackerX,
+                ExplosiveArrowSettings.damageTrackerY,
+                ExplosiveArrowSettings.damageTrackerScale,
+                mouseX,
+                mouseY
+        );
+    }
+
     private boolean isHudHovered(
             String text,
             int x,
@@ -239,6 +321,10 @@ public final class HudEditorScreen extends Screen {
                 mouseY <= y + scaledHeight;
     }
 
+    // =========================
+    // CLICK / DRAG
+    // =========================
+
     @Override
     public boolean mouseClicked(
             MouseButtonEvent event,
@@ -246,44 +332,79 @@ public final class HudEditorScreen extends Screen {
     ) {
         if (event.button() == 0) {
 
-            if (isStormTimerHovered(event.x(), event.y())) {
+            if (isStormTimerHovered(
+                    event.x(),
+                    event.y()
+            )) {
                 draggingStormTimer = true;
 
                 dragOffsetX =
-                        event.x() - StormSettings.stormTimerX;
+                        event.x()
+                                - StormSettings.stormTimerX;
 
                 dragOffsetY =
-                        event.y() - StormSettings.stormTimerY;
+                        event.y()
+                                - StormSettings.stormTimerY;
 
                 return true;
             }
 
-            if (isDeathTimerHovered(event.x(), event.y())) {
+            if (isDeathTimerHovered(
+                    event.x(),
+                    event.y()
+            )) {
                 draggingDeathTimer = true;
 
                 dragOffsetX =
-                        event.x() - StormSettings.stormDeathTimerX;
+                        event.x()
+                                - StormSettings.stormDeathTimerX;
 
                 dragOffsetY =
-                        event.y() - StormSettings.stormDeathTimerY;
+                        event.y()
+                                - StormSettings.stormDeathTimerY;
 
                 return true;
             }
 
-            if (isLbTimerHovered(event.x(), event.y())) {
+            if (isLbTimerHovered(
+                    event.x(),
+                    event.y()
+            )) {
                 draggingLbTimer = true;
 
                 dragOffsetX =
-                        event.x() - StormSettings.stormLbX;
+                        event.x()
+                                - StormSettings.stormLbX;
 
                 dragOffsetY =
-                        event.y() - StormSettings.stormLbY;
+                        event.y()
+                                - StormSettings.stormLbY;
+
+                return true;
+            }
+
+            if (isExplosiveArrowHovered(
+                    event.x(),
+                    event.y()
+            )) {
+                draggingExplosiveArrow = true;
+
+                dragOffsetX =
+                        event.x()
+                                - ExplosiveArrowSettings.damageTrackerX;
+
+                dragOffsetY =
+                        event.y()
+                                - ExplosiveArrowSettings.damageTrackerY;
 
                 return true;
             }
         }
 
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(
+                event,
+                doubleClick
+        );
     }
 
     @Override
@@ -295,10 +416,14 @@ public final class HudEditorScreen extends Screen {
         if (draggingStormTimer) {
 
             StormSettings.stormTimerX =
-                    (int) (event.x() - dragOffsetX);
+                    (int) (
+                            event.x() - dragOffsetX
+                    );
 
             StormSettings.stormTimerY =
-                    (int) (event.y() - dragOffsetY);
+                    (int) (
+                            event.y() - dragOffsetY
+                    );
 
             clampStormTimerPosition();
 
@@ -308,10 +433,14 @@ public final class HudEditorScreen extends Screen {
         if (draggingDeathTimer) {
 
             StormSettings.stormDeathTimerX =
-                    (int) (event.x() - dragOffsetX);
+                    (int) (
+                            event.x() - dragOffsetX
+                    );
 
             StormSettings.stormDeathTimerY =
-                    (int) (event.y() - dragOffsetY);
+                    (int) (
+                            event.y() - dragOffsetY
+                    );
 
             clampDeathTimerPosition();
 
@@ -321,22 +450,48 @@ public final class HudEditorScreen extends Screen {
         if (draggingLbTimer) {
 
             StormSettings.stormLbX =
-                    (int) (event.x() - dragOffsetX);
+                    (int) (
+                            event.x() - dragOffsetX
+                    );
 
             StormSettings.stormLbY =
-                    (int) (event.y() - dragOffsetY);
+                    (int) (
+                            event.y() - dragOffsetY
+                    );
 
             clampLbTimerPosition();
 
             return true;
         }
 
-        return super.mouseDragged(event, dragX, dragY);
+        if (draggingExplosiveArrow) {
+
+            ExplosiveArrowSettings.damageTrackerX =
+                    (int) (
+                            event.x() - dragOffsetX
+                    );
+
+            ExplosiveArrowSettings.damageTrackerY =
+                    (int) (
+                            event.y() - dragOffsetY
+                    );
+
+            clampExplosiveArrowPosition();
+
+            return true;
+        }
+
+        return super.mouseDragged(
+                event,
+                dragX,
+                dragY
+        );
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-
+    public boolean mouseReleased(
+            MouseButtonEvent event
+    ) {
         if (draggingStormTimer) {
             draggingStormTimer = false;
 
@@ -361,8 +516,20 @@ public final class HudEditorScreen extends Screen {
             return true;
         }
 
+        if (draggingExplosiveArrow) {
+            draggingExplosiveArrow = false;
+
+            saveExplosiveArrowLayout();
+
+            return true;
+        }
+
         return super.mouseReleased(event);
     }
+
+    // =========================
+    // SCROLL TO RESIZE
+    // =========================
 
     @Override
     public boolean mouseScrolled(
@@ -376,9 +543,12 @@ public final class HudEditorScreen extends Screen {
                         ? 0.1f
                         : -0.1f;
 
-        if (isStormTimerHovered(mouseX, mouseY)) {
-
-            StormSettings.stormTimerScale += change;
+        if (isStormTimerHovered(
+                mouseX,
+                mouseY
+        )) {
+            StormSettings.stormTimerScale +=
+                    change;
 
             StormSettings.stormTimerScale =
                     clampScale(
@@ -392,9 +562,12 @@ public final class HudEditorScreen extends Screen {
             return true;
         }
 
-        if (isDeathTimerHovered(mouseX, mouseY)) {
-
-            StormSettings.stormDeathTimerScale += change;
+        if (isDeathTimerHovered(
+                mouseX,
+                mouseY
+        )) {
+            StormSettings.stormDeathTimerScale +=
+                    change;
 
             StormSettings.stormDeathTimerScale =
                     clampScale(
@@ -408,9 +581,12 @@ public final class HudEditorScreen extends Screen {
             return true;
         }
 
-        if (isLbTimerHovered(mouseX, mouseY)) {
-
-            StormSettings.stormLbScale += change;
+        if (isLbTimerHovered(
+                mouseX,
+                mouseY
+        )) {
+            StormSettings.stormLbScale +=
+                    change;
 
             StormSettings.stormLbScale =
                     clampScale(
@@ -424,6 +600,25 @@ public final class HudEditorScreen extends Screen {
             return true;
         }
 
+        if (isExplosiveArrowHovered(
+                mouseX,
+                mouseY
+        )) {
+            ExplosiveArrowSettings.damageTrackerScale +=
+                    change;
+
+            ExplosiveArrowSettings.damageTrackerScale =
+                    clampScale(
+                            ExplosiveArrowSettings.damageTrackerScale
+                    );
+
+            clampExplosiveArrowPosition();
+
+            saveExplosiveArrowLayout();
+
+            return true;
+        }
+
         return super.mouseScrolled(
                 mouseX,
                 mouseY,
@@ -432,7 +627,9 @@ public final class HudEditorScreen extends Screen {
         );
     }
 
-    private float clampScale(float scale) {
+    private float clampScale(
+            float scale
+    ) {
         return Math.max(
                 0.5f,
                 Math.min(
@@ -442,113 +639,156 @@ public final class HudEditorScreen extends Screen {
         );
     }
 
+    // =========================
+    // POSITION CLAMPING
+    // =========================
+
     private void clampStormTimerPosition() {
-        clampHudPosition(
-                STORM_PREVIEW_TEXT,
-                StormSettings.stormTimerScale,
-                true,
-                false,
-                false
-        );
-    }
-
-    private void clampDeathTimerPosition() {
-        clampHudPosition(
-                DEATH_PREVIEW_TEXT,
-                StormSettings.stormDeathTimerScale,
-                false,
-                true,
-                false
-        );
-    }
-
-    private void clampLbTimerPosition() {
-        clampHudPosition(
-                LB_PREVIEW_TEXT,
-                StormSettings.stormLbScale,
-                false,
-                false,
-                true
-        );
-    }
-
-    private void clampHudPosition(
-            String text,
-            float scale,
-            boolean storm,
-            boolean death,
-            boolean lb
-    ) {
         int width =
-                Math.round(
-                        this.font.width(text) * scale
+                getScaledWidth(
+                        STORM_PREVIEW_TEXT,
+                        StormSettings.stormTimerScale
                 );
 
         int height =
-                Math.round(
-                        this.font.lineHeight * scale
+                getScaledHeight(
+                        StormSettings.stormTimerScale
                 );
 
-        if (storm) {
-            StormSettings.stormTimerX =
-                    Math.max(
-                            0,
-                            Math.min(
-                                    StormSettings.stormTimerX,
-                                    this.width - width
-                            )
-                    );
+        StormSettings.stormTimerX =
+                clampX(
+                        StormSettings.stormTimerX,
+                        width
+                );
 
-            StormSettings.stormTimerY =
-                    Math.max(
-                            0,
-                            Math.min(
-                                    StormSettings.stormTimerY,
-                                    this.height - height
-                            )
-                    );
-        }
-
-        if (death) {
-            StormSettings.stormDeathTimerX =
-                    Math.max(
-                            0,
-                            Math.min(
-                                    StormSettings.stormDeathTimerX,
-                                    this.width - width
-                            )
-                    );
-
-            StormSettings.stormDeathTimerY =
-                    Math.max(
-                            0,
-                            Math.min(
-                                    StormSettings.stormDeathTimerY,
-                                    this.height - height
-                            )
-                    );
-        }
-
-        if (lb) {
-            StormSettings.stormLbX =
-                    Math.max(
-                            0,
-                            Math.min(
-                                    StormSettings.stormLbX,
-                                    this.width - width
-                            )
-                    );
-
-            StormSettings.stormLbY =
-                    Math.max(
-                            0,
-                            Math.min(
-                                    StormSettings.stormLbY,
-                                    this.height - height
-                            )
-                    );
-        }
+        StormSettings.stormTimerY =
+                clampY(
+                        StormSettings.stormTimerY,
+                        height
+                );
     }
+
+    private void clampDeathTimerPosition() {
+        int width =
+                getScaledWidth(
+                        DEATH_PREVIEW_TEXT,
+                        StormSettings.stormDeathTimerScale
+                );
+
+        int height =
+                getScaledHeight(
+                        StormSettings.stormDeathTimerScale
+                );
+
+        StormSettings.stormDeathTimerX =
+                clampX(
+                        StormSettings.stormDeathTimerX,
+                        width
+                );
+
+        StormSettings.stormDeathTimerY =
+                clampY(
+                        StormSettings.stormDeathTimerY,
+                        height
+                );
+    }
+
+    private void clampLbTimerPosition() {
+        int width =
+                getScaledWidth(
+                        LB_PREVIEW_TEXT,
+                        StormSettings.stormLbScale
+                );
+
+        int height =
+                getScaledHeight(
+                        StormSettings.stormLbScale
+                );
+
+        StormSettings.stormLbX =
+                clampX(
+                        StormSettings.stormLbX,
+                        width
+                );
+
+        StormSettings.stormLbY =
+                clampY(
+                        StormSettings.stormLbY,
+                        height
+                );
+    }
+
+    private void clampExplosiveArrowPosition() {
+        int width =
+                getScaledWidth(
+                        EXPLOSIVE_ARROW_PREVIEW_TEXT,
+                        ExplosiveArrowSettings.damageTrackerScale
+                );
+
+        int height =
+                getScaledHeight(
+                        ExplosiveArrowSettings.damageTrackerScale
+                );
+
+        ExplosiveArrowSettings.damageTrackerX =
+                clampX(
+                        ExplosiveArrowSettings.damageTrackerX,
+                        width
+                );
+
+        ExplosiveArrowSettings.damageTrackerY =
+                clampY(
+                        ExplosiveArrowSettings.damageTrackerY,
+                        height
+                );
+    }
+
+    private int getScaledWidth(
+            String text,
+            float scale
+    ) {
+        return Math.round(
+                this.font.width(text) * scale
+        );
+    }
+
+    private int getScaledHeight(
+            float scale
+    ) {
+        return Math.round(
+                this.font.lineHeight * scale
+        );
+    }
+
+    private int clampX(
+            int x,
+            int width
+    ) {
+        return Math.max(
+                0,
+                Math.min(
+                        x,
+                        this.width - width
+                )
+        );
+    }
+
+    private int clampY(
+            int y,
+            int height
+    ) {
+        return Math.max(
+                0,
+                Math.min(
+                        y,
+                        this.height - height
+                )
+        );
+    }
+
+    // =========================
+    // SAVE LAYOUT
+    // =========================
 
     private void saveStormTimerLayout() {
 
@@ -588,6 +828,20 @@ public final class HudEditorScreen extends Screen {
 
         ObbyConfig.get().stormLbScale =
                 StormSettings.stormLbScale;
+
+        ObbyConfig.save();
+    }
+
+    private void saveExplosiveArrowLayout() {
+
+        ObbyConfig.get().explosiveArrowDamageTrackerX =
+                ExplosiveArrowSettings.damageTrackerX;
+
+        ObbyConfig.get().explosiveArrowDamageTrackerY =
+                ExplosiveArrowSettings.damageTrackerY;
+
+        ObbyConfig.get().explosiveArrowDamageTrackerScale =
+                ExplosiveArrowSettings.damageTrackerScale;
 
         ObbyConfig.save();
     }

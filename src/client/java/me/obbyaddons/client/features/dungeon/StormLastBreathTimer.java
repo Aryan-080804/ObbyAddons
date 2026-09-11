@@ -13,7 +13,7 @@ public final class StormLastBreathTimer {
     private static final int BASE_TARGET_TICK = 34 * 20;
 
     // Show countdown for 3 seconds.
-    private static final int COUNTDOWN_TICKS = 3 * 20;
+    private static final int COUNTDOWN_TICKS = 5 * 20;
 
     // Show "SHOOT BOW" for 0.5 seconds.
     private static final int SHOOT_BOW_DURATION_TICKS = 10;

@@ -23,31 +23,74 @@ public final class ObbyConfig {
 
     private static ObbyConfig instance = new ObbyConfig();
 
+    // =========================
+    // CHAT CLEANER
+    // =========================
+
     public boolean chatCleanerEnabled = true;
     public boolean dungeonSpamEnabled = true;
     public boolean m7BossSpamEnabled = true;
 
+    // =========================
+    // STORM TIMER
+    // =========================
+
     public int stormTimerX = 100;
     public int stormTimerY = 60;
     public float stormTimerScale = 1.0f;
-    public int stormDeathTimerX = 100;
-    public int stormDeathTimerY = 80;
-    public float stormDeathTimerScale = 1.0f;
+
     public int stormTimerColor = 0xFF7C3AED;
-    public int stormDeathTimerColor = 0xFFFFFF55;
-    public boolean stormSpiritMaskWarning = true;
 
     public boolean stormTickTimerEnabled = true;
     public boolean stormTickDownFrom5 = true;
+
+    // =========================
+    // FIRST DEATH TIMER
+    // =========================
+
     public boolean stormFirstDeathTime = true;
 
+    public int stormDeathTimerX = 100;
+    public int stormDeathTimerY = 80;
+    public float stormDeathTimerScale = 1.0f;
+
+    public int stormDeathTimerColor = 0xFFFFFF55;
+
+    // =========================
+    // SPIRIT MASK
+    // =========================
+
+    public boolean stormSpiritMaskWarning = true;
+
+    // =========================
+    // STORM LAST BREATH
+    // =========================
+
     public boolean stormLbEnabled = true;
+
     public int stormLbTickOffset = 0;
     public int stormLbColor = 0xFF7C3AED;
 
     public int stormLbX = 100;
     public int stormLbY = 100;
     public float stormLbScale = 1.0f;
+
+    // =========================
+    // EXPLOSIVE ARROW
+    // =========================
+
+    // Main feature toggle
+    public boolean explosiveArrowEnabled = true;
+
+    // Only controls whether the HUD is visible
+    public boolean explosiveArrowDamageTrackerHudEnabled = true;
+
+    // HUD color
+    public int explosiveArrowDamageTrackerColor = 0xFF7C3AED;
+
+    public int explosiveArrowDamageTrackerX = 10;
+    public int explosiveArrowDamageTrackerY = 10;
+    public float explosiveArrowDamageTrackerScale = 1.0f;
 
     private ObbyConfig() {
     }
@@ -63,26 +106,42 @@ public final class ObbyConfig {
         }
 
         try (Reader reader = Files.newBufferedReader(CONFIG_PATH)) {
-            ObbyConfig loaded = GSON.fromJson(reader, ObbyConfig.class);
+            ObbyConfig loaded =
+                    GSON.fromJson(reader, ObbyConfig.class);
 
             if (loaded != null) {
                 instance = loaded;
             }
+
         } catch (IOException exception) {
-            System.err.println("[ObbyAddons] Failed to load config.");
+            System.err.println(
+                    "[ObbyAddons] Failed to load config."
+            );
+
             exception.printStackTrace();
         }
     }
 
     public static void save() {
         try {
-            Files.createDirectories(CONFIG_PATH.getParent());
+            Files.createDirectories(
+                    CONFIG_PATH.getParent()
+            );
 
-            try (Writer writer = Files.newBufferedWriter(CONFIG_PATH)) {
-                GSON.toJson(instance, writer);
+            try (Writer writer =
+                         Files.newBufferedWriter(CONFIG_PATH)) {
+
+                GSON.toJson(
+                        instance,
+                        writer
+                );
             }
+
         } catch (IOException exception) {
-            System.err.println("[ObbyAddons] Failed to save config.");
+            System.err.println(
+                    "[ObbyAddons] Failed to save config."
+            );
+
             exception.printStackTrace();
         }
     }
