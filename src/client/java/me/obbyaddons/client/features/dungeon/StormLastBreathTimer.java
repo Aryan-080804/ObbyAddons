@@ -47,7 +47,7 @@ public final class StormLastBreathTimer {
                      */
                     int targetTick =
                             BASE_TARGET_TICK
-                                    - StormSettings.stormLbTickOffset;
+                                    + StormSettings.stormLbTickOffset;
 
                     int countdownStartTick =
                             targetTick - COUNTDOWN_TICKS;
