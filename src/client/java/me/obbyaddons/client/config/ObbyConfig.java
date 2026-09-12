@@ -92,6 +92,41 @@ public final class ObbyConfig {
     public int explosiveArrowDamageTrackerY = 10;
     public float explosiveArrowDamageTrackerScale = 1.0f;
 
+    // =========================
+    // TERMINATOR OVERLAY
+    // =========================
+
+    public boolean terminatorOverlayEnabled = true;
+    public int terminatorOverlayColor = 0xFFFFFFFF;
+
+    // =========================
+    // CLICK PROT DISPLAY
+    // =========================
+
+    public boolean terminalClickTimerEnabled = true;
+
+    public int terminalClickDelayMs = 400;
+
+    public int terminalClickTimerColor = 0xFFFFFFFF;
+
+    public int terminalClickTimerX = 100;
+    public int terminalClickTimerY = 30;
+
+    public float terminalClickTimerScale = 1.0f;
+
+    // =========================
+    // DUNGEON RUN TRACKER
+    // =========================
+
+    public boolean dungeonRunTrackerEnabled = true;
+
+    public int dungeonRunTrackerX = 10;
+    public int dungeonRunTrackerY = 120;
+
+    public float dungeonRunTrackerScale = 1.0f;
+
+    public int dungeonRunTrackerColor = 0xFFFFFFFF;
+
     private ObbyConfig() {
     }
 

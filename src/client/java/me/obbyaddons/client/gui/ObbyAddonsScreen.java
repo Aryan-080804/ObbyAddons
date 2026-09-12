@@ -36,6 +36,8 @@ public final class ObbyAddonsScreen extends Screen {
     private ChatCleanerSettingsWindow chatCleanerSettingsWindow;
     private StormSettingsWindow stormSettingsWindow;
     private ExplosiveArrowSettingsWindow explosiveArrowSettingsWindow;
+    private TerminatorOverlaySettingsWindow terminatorOverlaySettingsWindow;
+    private TerminalClickTimerSettingsWindow terminalClickTimerSettingsWindow;
 
     private EditBox searchBox;
 
@@ -108,6 +110,15 @@ public final class ObbyAddonsScreen extends Screen {
         Feature explosiveArrow =
                 FeatureManager.getFeature("Explosive Arrow");
 
+        Feature terminatorOverlay =
+                FeatureManager.getFeature("Term Ult Enchant");
+
+        Feature terminalClickTimer =
+                FeatureManager.getFeature("Click Prot Display");
+
+        Feature dungeonRunTracker =
+                FeatureManager.getFeature("Dungeon Run Tracker");
+
         String search = getSearchText();
 
         boolean showChatCleaner =
@@ -116,19 +127,30 @@ public final class ObbyAddonsScreen extends Screen {
         boolean showStormFeatures =
                 matchesSearch(stormFeatures, search);
 
+        boolean showTerminatorOverlay =
+                matchesSearch(terminatorOverlay, search);
+
         boolean showExplosiveArrow =
                 matchesSearch(explosiveArrow, search) ||
                         (
                                 explosiveArrow != null &&
                                 "damage tracker".contains(search)
                         );
+        
+        boolean showTerminalClickTimer =
+                matchesSearch(terminalClickTimer, search);
+
+        boolean showDungeonRunTracker =
+                matchesSearch(dungeonRunTracker, search);
 
         drawGeneralPanel(
                 graphics,
                 mouseX,
                 mouseY,
                 chatCleaner,
-                showChatCleaner
+                terminatorOverlay,
+                showChatCleaner,
+                showTerminatorOverlay
         );
 
         drawDungeonPanel(
@@ -137,8 +159,12 @@ public final class ObbyAddonsScreen extends Screen {
                 mouseY,
                 stormFeatures,
                 explosiveArrow,
+                terminalClickTimer,
+                dungeonRunTracker,
                 showStormFeatures,
-                showExplosiveArrow
+                showExplosiveArrow,
+                showTerminalClickTimer,
+                showDungeonRunTracker
         );
 
         drawSettingsWindows(
@@ -207,14 +233,17 @@ public final class ObbyAddonsScreen extends Screen {
     }
 
     private void drawGeneralPanel(
-            GuiGraphicsExtractor graphics,
-            int mouseX,
-            int mouseY,
-            Feature chatCleaner,
-            boolean showChatCleaner
+        GuiGraphicsExtractor graphics,
+        int mouseX,
+        int mouseY,
+        Feature chatCleaner,
+        Feature terminatorOverlay,
+        boolean showChatCleaner,
+        boolean showTerminatorOverlay
     ) {
         int featureCount =
-                showChatCleaner ? 1 : 0;
+                (showChatCleaner ? 1 : 0)
+                        + (showTerminatorOverlay ? 1 : 0);
 
         int panelHeight =
                 HEADER_HEIGHT +
@@ -229,15 +258,31 @@ public final class ObbyAddonsScreen extends Screen {
                 "GENERAL"
         );
 
+        int rowY =
+                PANEL_Y + HEADER_HEIGHT;
+
         if (showChatCleaner) {
-            drawFeatureRow(
-                    graphics,
-                    chatCleaner,
-                    PANEL_X,
-                    PANEL_Y + HEADER_HEIGHT,
-                    mouseX,
-                    mouseY
-            );
+                drawFeatureRow(
+                        graphics,
+                        chatCleaner,
+                        PANEL_X,
+                        rowY,
+                        mouseX,
+                        mouseY
+                );
+
+                rowY += ROW_HEIGHT;
+        }
+
+        if (showTerminatorOverlay) {
+                drawFeatureRow(
+                        graphics,
+                        terminatorOverlay,
+                        PANEL_X,
+                        rowY,
+                        mouseX,
+                        mouseY
+                );
         }
     }
 
@@ -247,8 +292,12 @@ public final class ObbyAddonsScreen extends Screen {
             int mouseY,
             Feature stormFeatures,
             Feature explosiveArrow,
+            Feature terminalClickTimer,
+            Feature dungeonRunTracker,
             boolean showStormFeatures,
-            boolean showExplosiveArrow
+            boolean showExplosiveArrow,
+            boolean showTerminalClickTimer,
+            boolean showDungeonRunTracker
     ) {
         int featureCount = 0;
 
@@ -258,6 +307,15 @@ public final class ObbyAddonsScreen extends Screen {
 
         if (showExplosiveArrow) {
             featureCount++;
+        }
+
+
+        if (showTerminalClickTimer) {
+                featureCount++;
+        }
+
+        if (showDungeonRunTracker) {
+                featureCount++;
         }
 
         int panelHeight =
@@ -298,6 +356,36 @@ public final class ObbyAddonsScreen extends Screen {
                     mouseX,
                     mouseY
             );
+
+            rowY += ROW_HEIGHT;
+        }
+
+
+        if (showTerminalClickTimer) {
+            drawFeatureRow(
+                graphics,
+                terminalClickTimer,
+                DUNGEON_X,
+                rowY,
+                mouseX,
+                mouseY
+            );
+
+            rowY += ROW_HEIGHT;
+        }
+
+        if (showDungeonRunTracker) {
+
+            drawFeatureRow(
+                    graphics,
+                    dungeonRunTracker,
+                    DUNGEON_X,
+                    rowY,
+                    mouseX,
+                    mouseY
+            );
+
+            rowY += ROW_HEIGHT;
         }
     }
 
@@ -434,6 +522,24 @@ public final class ObbyAddonsScreen extends Screen {
                     mouseY
             );
         }
+
+        if (terminatorOverlaySettingsWindow != null) {
+            terminatorOverlaySettingsWindow.render(
+                this,
+                graphics,
+                mouseX,
+                mouseY
+            );
+        }
+
+        if (terminalClickTimerSettingsWindow != null) {
+                terminalClickTimerSettingsWindow.render(
+                    this,
+                    graphics,
+                    mouseX,
+                    mouseY
+            );
+        }       
     }
 
     @Override
@@ -452,6 +558,14 @@ public final class ObbyAddonsScreen extends Screen {
         if (handleExplosiveArrowWindowClick(event)) {
             return true;
         }
+
+        if (handleTerminatorOverlayWindowClick(event)) {
+            return true;
+        }
+
+        if (handleTerminalClickTimerWindowClick(event)) {
+            return true;
+        }       
 
         if (hoveredFeature != null) {
 
@@ -479,6 +593,16 @@ public final class ObbyAddonsScreen extends Screen {
 
                 if (name.equals("Explosive Arrow")) {
                     openExplosiveArrowWindow();
+                    return true;
+                }
+
+                if (name.equals("Term Ult Enchant")) {
+                    openTerminatorOverlayWindow();
+                    return true;
+                }
+
+                if (name.equals("Click Prot Display")) {
+                    openTerminalClickTimerWindow();
                     return true;
                 }
             }
@@ -622,6 +746,102 @@ public final class ObbyAddonsScreen extends Screen {
         return false;
     }
 
+    private boolean handleTerminatorOverlayWindowClick(
+            MouseButtonEvent event
+    ) {
+
+        if (terminatorOverlaySettingsWindow == null) {
+                return false;
+        }
+
+        // Close button
+        if (event.button() == 0 &&
+                terminatorOverlaySettingsWindow
+                        .isCloseButtonHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+                terminatorOverlaySettingsWindow = null;
+                return true;
+        }
+
+        // Color row click
+        if (terminatorOverlaySettingsWindow.handleClick(
+                event.x(),
+                event.y(),
+                event.button()
+        )) {
+                return true;
+        }
+
+        // Drag window
+        if (event.button() == 0 &&
+                terminatorOverlaySettingsWindow
+                        .isHeaderHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+                terminatorOverlaySettingsWindow.startDragging(
+                        event.x(),
+                        event.y()
+                );
+
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean handleTerminalClickTimerWindowClick(
+            MouseButtonEvent event
+    ) {
+
+        if (terminalClickTimerSettingsWindow == null) {
+                return false;
+        }
+
+        // Close button
+        if (event.button() == 0 &&
+                terminalClickTimerSettingsWindow
+                        .isCloseButtonHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+                terminalClickTimerSettingsWindow = null;
+                return true;
+        }
+
+        // Slider / color click
+        if (terminalClickTimerSettingsWindow.handleClick(
+                event.x(),
+                event.y(),
+                event.button()
+        )) {
+                return true;
+        }
+
+        // Drag settings window
+        if (event.button() == 0 &&
+                terminalClickTimerSettingsWindow
+                        .isHeaderHovered(
+                                event.x(),
+                                event.y()
+                        )) {
+
+                terminalClickTimerSettingsWindow.startDragging(
+                        event.x(),
+                        event.y()
+                );
+
+                return true;
+        }
+
+        return false;
+    }
+
     private void openChatCleanerWindow() {
         int windowWidth = 145;
         int windowHeight = 82;
@@ -668,6 +888,42 @@ public final class ObbyAddonsScreen extends Screen {
 
         explosiveArrowSettingsWindow =
                 new ExplosiveArrowSettingsWindow(
+                        centerX,
+                        centerY
+                );
+    }
+
+    private void openTerminatorOverlayWindow() {
+
+        int windowWidth = 190;
+        int windowHeight = 40;
+
+        int centerX =
+                (this.width - windowWidth) / 2;
+
+        int centerY =
+                (this.height - windowHeight) / 2;
+
+        terminatorOverlaySettingsWindow =
+                new TerminatorOverlaySettingsWindow(
+                        centerX,
+                        centerY
+                );
+    }
+
+    private void openTerminalClickTimerWindow() {
+
+        int windowWidth = 190;
+        int windowHeight = 60;
+
+        int centerX =
+                (this.width - windowWidth) / 2;
+
+        int centerY =
+                (this.height - windowHeight) / 2;
+
+        terminalClickTimerSettingsWindow =
+                new TerminalClickTimerSettingsWindow(
                         centerX,
                         centerY
                 );
@@ -722,6 +978,38 @@ public final class ObbyAddonsScreen extends Screen {
             return true;
         }
 
+        if (terminalClickTimerSettingsWindow != null &&
+                terminalClickTimerSettingsWindow.isSliderDragging()) {
+
+            terminalClickTimerSettingsWindow.dragSlider(
+                    event.x()
+            );
+
+            return true;
+        }
+
+        if (terminalClickTimerSettingsWindow != null &&
+                terminalClickTimerSettingsWindow.isDragging()) {
+
+            terminalClickTimerSettingsWindow.dragTo(
+                    event.x(),
+                    event.y()
+            );
+
+            return true;
+        }
+
+        if (terminatorOverlaySettingsWindow != null &&
+                terminatorOverlaySettingsWindow.isDragging()) {
+
+        terminatorOverlaySettingsWindow.dragTo(
+                event.x(),
+                event.y()
+        );
+
+        return true;
+        }
+
         return super.mouseDragged(
                 event,
                 dragX,
@@ -758,6 +1046,27 @@ public final class ObbyAddonsScreen extends Screen {
                 explosiveArrowSettingsWindow.isDragging()) {
 
             explosiveArrowSettingsWindow.stopDragging();
+            return true;
+        }
+
+        if (terminatorOverlaySettingsWindow != null &&
+                terminatorOverlaySettingsWindow.isDragging()) {
+
+            terminatorOverlaySettingsWindow.stopDragging();
+            return true;
+        }
+
+        if (terminalClickTimerSettingsWindow != null &&
+                terminalClickTimerSettingsWindow.isSliderDragging()) {
+
+            terminalClickTimerSettingsWindow.stopSliderDragging();
+            return true;
+        }
+
+        if (terminalClickTimerSettingsWindow != null &&
+                terminalClickTimerSettingsWindow.isDragging()) {
+
+            terminalClickTimerSettingsWindow.stopDragging();
             return true;
         }
 

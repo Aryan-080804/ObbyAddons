@@ -3,6 +3,8 @@ package me.obbyaddons.client.gui;
 import me.obbyaddons.client.config.ObbyConfig;
 import me.obbyaddons.client.features.dungeon.ExplosiveArrowSettings;
 import me.obbyaddons.client.features.dungeon.StormSettings;
+import me.obbyaddons.client.features.dungeon.TerminalClickTimerSettings;
+import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerSettings;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -11,27 +13,68 @@ import net.minecraft.network.chat.Component;
 
 public final class HudEditorScreen extends Screen {
 
-    private static final String STORM_PREVIEW_TEXT = "25.35";
-    private static final String DEATH_PREVIEW_TEXT = "41.30";
-    private static final String LB_PREVIEW_TEXT = "5.00";
+    // =========================
+    // PREVIEW TEXT
+    // =========================
+
+    private static final String STORM_PREVIEW_TEXT =
+            "25.35";
+
+    private static final String DEATH_PREVIEW_TEXT =
+            "35.15";
+
+    private static final String LB_PREVIEW_TEXT =
+            "5.00";
 
     private static final String EXPLOSIVE_ARROW_PREVIEW_TEXT =
             "Explosive Arrow: 74,586,293";
 
-    private static final int PURPLE = 0xFF7C3AED;
-    private static final int SELECTED_BACKGROUND = 0x553B0764;
+    private static final String CLICK_PROT_PREVIEW_TEXT =
+            "400ms";
+
+    private static final String[] DUNGEON_RUN_TRACKER_PREVIEW = {
+            "M7",
+            "Runs: 8",
+            "Last: 5:12",
+            "Avg: 5:21",
+            "Best: 4:48"
+    };
+
+    // =========================
+    // COLORS
+    // =========================
+
+    private static final int PURPLE =
+            0xFF7C3AED;
+
+    private static final int SELECTED_BACKGROUND =
+            0x553B0764;
+
+    // =========================
+    // DRAG STATE
+    // =========================
 
     private boolean draggingStormTimer = false;
     private boolean draggingDeathTimer = false;
     private boolean draggingLbTimer = false;
     private boolean draggingExplosiveArrow = false;
+    private boolean draggingClickProt = false;
+    private boolean draggingDungeonRunTracker = false;
 
     private double dragOffsetX;
     private double dragOffsetY;
 
     public HudEditorScreen() {
-        super(Component.literal("ObbyAddons HUD Editor"));
+        super(
+                Component.literal(
+                        "ObbyAddons HUD Editor"
+                )
+        );
     }
+
+    // =========================
+    // RENDER
+    // =========================
 
     @Override
     public void extractRenderState(
@@ -47,53 +90,7 @@ public final class HudEditorScreen extends Screen {
                 delta
         );
 
-        drawStormTimerPreview(
-                graphics,
-                mouseX,
-                mouseY
-        );
-
-        drawDeathTimerPreview(
-                graphics,
-                mouseX,
-                mouseY
-        );
-
-        drawLbTimerPreview(
-                graphics,
-                mouseX,
-                mouseY
-        );
-
-        drawExplosiveArrowPreview(
-                graphics,
-                mouseX,
-                mouseY
-        );
-
-        String help =
-                "Drag to move • Scroll to resize";
-
-        graphics.text(
-                this.font,
-                help,
-                (this.width - this.font.width(help)) / 2,
-                this.height - 20,
-                0xFFFFFFFF,
-                true
-        );
-    }
-
-    // =========================
-    // PREVIEWS
-    // =========================
-
-    private void drawStormTimerPreview(
-            GuiGraphicsExtractor graphics,
-            int mouseX,
-            int mouseY
-    ) {
-        drawHudPreview(
+        drawSingleLinePreview(
                 graphics,
                 STORM_PREVIEW_TEXT,
                 StormSettings.stormTimerX,
@@ -104,14 +101,8 @@ public final class HudEditorScreen extends Screen {
                 mouseY,
                 draggingStormTimer
         );
-    }
 
-    private void drawDeathTimerPreview(
-            GuiGraphicsExtractor graphics,
-            int mouseX,
-            int mouseY
-    ) {
-        drawHudPreview(
+        drawSingleLinePreview(
                 graphics,
                 DEATH_PREVIEW_TEXT,
                 StormSettings.stormDeathTimerX,
@@ -122,14 +113,8 @@ public final class HudEditorScreen extends Screen {
                 mouseY,
                 draggingDeathTimer
         );
-    }
 
-    private void drawLbTimerPreview(
-            GuiGraphicsExtractor graphics,
-            int mouseX,
-            int mouseY
-    ) {
-        drawHudPreview(
+        drawSingleLinePreview(
                 graphics,
                 LB_PREVIEW_TEXT,
                 StormSettings.stormLbX,
@@ -140,14 +125,8 @@ public final class HudEditorScreen extends Screen {
                 mouseY,
                 draggingLbTimer
         );
-    }
 
-    private void drawExplosiveArrowPreview(
-            GuiGraphicsExtractor graphics,
-            int mouseX,
-            int mouseY
-    ) {
-        drawHudPreview(
+        drawSingleLinePreview(
                 graphics,
                 EXPLOSIVE_ARROW_PREVIEW_TEXT,
                 ExplosiveArrowSettings.damageTrackerX,
@@ -158,9 +137,41 @@ public final class HudEditorScreen extends Screen {
                 mouseY,
                 draggingExplosiveArrow
         );
+
+        drawSingleLinePreview(
+                graphics,
+                CLICK_PROT_PREVIEW_TEXT,
+                TerminalClickTimerSettings.x,
+                TerminalClickTimerSettings.y,
+                TerminalClickTimerSettings.scale,
+                TerminalClickTimerSettings.color,
+                mouseX,
+                mouseY,
+                draggingClickProt
+        );
+
+        drawMultiLinePreview(
+                graphics,
+                DUNGEON_RUN_TRACKER_PREVIEW,
+                DungeonRunTrackerSettings.x,
+                DungeonRunTrackerSettings.y,
+                DungeonRunTrackerSettings.scale,
+                DungeonRunTrackerSettings.color,
+                mouseX,
+                mouseY,
+                draggingDungeonRunTracker
+        );
+
+        drawHelpText(
+                graphics
+        );
     }
 
-    private void drawHudPreview(
+    // =========================
+    // PREVIEW DRAWING
+    // =========================
+
+    private void drawSingleLinePreview(
             GuiGraphicsExtractor graphics,
             String text,
             int x,
@@ -171,37 +182,35 @@ public final class HudEditorScreen extends Screen {
             int mouseY,
             boolean dragging
     ) {
-        int normalWidth =
-                this.font.width(text);
-
-        int normalHeight =
-                this.font.lineHeight;
-
         int scaledWidth =
-                Math.round(
-                        normalWidth * scale
+                getScaledWidth(
+                        text,
+                        scale
                 );
 
         int scaledHeight =
-                Math.round(
-                        normalHeight * scale
+                getScaledHeight(
+                        scale
                 );
 
         boolean hovered =
-                mouseX >= x &&
-                mouseX <= x + scaledWidth &&
-                mouseY >= y &&
-                mouseY <= y + scaledHeight;
+                isInside(
+                        mouseX,
+                        mouseY,
+                        x,
+                        y,
+                        scaledWidth,
+                        scaledHeight
+                );
 
-        if (hovered || dragging) {
-            graphics.fill(
-                    x - 3,
-                    y - 3,
-                    x + scaledWidth + 3,
-                    y + scaledHeight + 3,
-                    SELECTED_BACKGROUND
-            );
-        }
+        drawSelectionBackground(
+                graphics,
+                x,
+                y,
+                scaledWidth,
+                scaledHeight,
+                hovered || dragging
+        );
 
         graphics.pose().pushMatrix();
 
@@ -226,15 +235,152 @@ public final class HudEditorScreen extends Screen {
 
         graphics.pose().popMatrix();
 
-        if (hovered || dragging) {
-            graphics.fill(
-                    x - 3,
-                    y - 3,
-                    x + scaledWidth + 3,
-                    y - 2,
-                    PURPLE
+        drawSelectionTopBar(
+                graphics,
+                x,
+                y,
+                scaledWidth,
+                hovered || dragging
+        );
+    }
+
+    private void drawMultiLinePreview(
+            GuiGraphicsExtractor graphics,
+            String[] lines,
+            int x,
+            int y,
+            float scale,
+            int color,
+            int mouseX,
+            int mouseY,
+            boolean dragging
+    ) {
+        int scaledWidth =
+                getMultiLineScaledWidth(
+                        lines,
+                        scale
+                );
+
+        int scaledHeight =
+                getMultiLineScaledHeight(
+                        lines,
+                        scale
+                );
+
+        boolean hovered =
+                isInside(
+                        mouseX,
+                        mouseY,
+                        x,
+                        y,
+                        scaledWidth,
+                        scaledHeight
+                );
+
+        drawSelectionBackground(
+                graphics,
+                x,
+                y,
+                scaledWidth,
+                scaledHeight,
+                hovered || dragging
+        );
+
+        graphics.pose().pushMatrix();
+
+        graphics.pose().translate(
+                x,
+                y
+        );
+
+        graphics.pose().scale(
+                scale,
+                scale
+        );
+
+        int yOffset = 0;
+
+        for (String line : lines) {
+
+            graphics.text(
+                    this.font,
+                    line,
+                    0,
+                    yOffset,
+                    color,
+                    true
             );
+
+            yOffset +=
+                    this.font.lineHeight + 1;
         }
+
+        graphics.pose().popMatrix();
+
+        drawSelectionTopBar(
+                graphics,
+                x,
+                y,
+                scaledWidth,
+                hovered || dragging
+        );
+    }
+
+    private void drawSelectionBackground(
+            GuiGraphicsExtractor graphics,
+            int x,
+            int y,
+            int width,
+            int height,
+            boolean selected
+    ) {
+        if (!selected) {
+            return;
+        }
+
+        graphics.fill(
+                x - 3,
+                y - 3,
+                x + width + 3,
+                y + height + 3,
+                SELECTED_BACKGROUND
+        );
+    }
+
+    private void drawSelectionTopBar(
+            GuiGraphicsExtractor graphics,
+            int x,
+            int y,
+            int width,
+            boolean selected
+    ) {
+        if (!selected) {
+            return;
+        }
+
+        graphics.fill(
+                x - 3,
+                y - 3,
+                x + width + 3,
+                y - 2,
+                PURPLE
+        );
+    }
+
+    private void drawHelpText(
+            GuiGraphicsExtractor graphics
+    ) {
+        String help =
+                "Drag to move • Scroll to resize";
+
+        graphics.text(
+                this.font,
+                help,
+                (this.width - this.font.width(help)) / 2,
+                this.height - 20,
+                0xFFFFFFFF,
+                true
+        );
     }
 
     // =========================
@@ -245,7 +391,7 @@ public final class HudEditorScreen extends Screen {
             double mouseX,
             double mouseY
     ) {
-        return isHudHovered(
+        return isSingleLineHovered(
                 STORM_PREVIEW_TEXT,
                 StormSettings.stormTimerX,
                 StormSettings.stormTimerY,
@@ -259,7 +405,7 @@ public final class HudEditorScreen extends Screen {
             double mouseX,
             double mouseY
     ) {
-        return isHudHovered(
+        return isSingleLineHovered(
                 DEATH_PREVIEW_TEXT,
                 StormSettings.stormDeathTimerX,
                 StormSettings.stormDeathTimerY,
@@ -273,7 +419,7 @@ public final class HudEditorScreen extends Screen {
             double mouseX,
             double mouseY
     ) {
-        return isHudHovered(
+        return isSingleLineHovered(
                 LB_PREVIEW_TEXT,
                 StormSettings.stormLbX,
                 StormSettings.stormLbY,
@@ -287,7 +433,7 @@ public final class HudEditorScreen extends Screen {
             double mouseX,
             double mouseY
     ) {
-        return isHudHovered(
+        return isSingleLineHovered(
                 EXPLOSIVE_ARROW_PREVIEW_TEXT,
                 ExplosiveArrowSettings.damageTrackerX,
                 ExplosiveArrowSettings.damageTrackerY,
@@ -297,7 +443,47 @@ public final class HudEditorScreen extends Screen {
         );
     }
 
-    private boolean isHudHovered(
+    private boolean isClickProtHovered(
+            double mouseX,
+            double mouseY
+    ) {
+        return isSingleLineHovered(
+                CLICK_PROT_PREVIEW_TEXT,
+                TerminalClickTimerSettings.x,
+                TerminalClickTimerSettings.y,
+                TerminalClickTimerSettings.scale,
+                mouseX,
+                mouseY
+        );
+    }
+
+    private boolean isDungeonRunTrackerHovered(
+            double mouseX,
+            double mouseY
+    ) {
+        int width =
+                getMultiLineScaledWidth(
+                        DUNGEON_RUN_TRACKER_PREVIEW,
+                        DungeonRunTrackerSettings.scale
+                );
+
+        int height =
+                getMultiLineScaledHeight(
+                        DUNGEON_RUN_TRACKER_PREVIEW,
+                        DungeonRunTrackerSettings.scale
+                );
+
+        return isInside(
+                mouseX,
+                mouseY,
+                DungeonRunTrackerSettings.x,
+                DungeonRunTrackerSettings.y,
+                width,
+                height
+        );
+    }
+
+    private boolean isSingleLineHovered(
             String text,
             int x,
             int y,
@@ -305,24 +491,43 @@ public final class HudEditorScreen extends Screen {
             double mouseX,
             double mouseY
     ) {
-        int scaledWidth =
-                Math.round(
-                        this.font.width(text) * scale
+        int width =
+                getScaledWidth(
+                        text,
+                        scale
                 );
 
-        int scaledHeight =
-                Math.round(
-                        this.font.lineHeight * scale
+        int height =
+                getScaledHeight(
+                        scale
                 );
 
-        return mouseX >= x &&
-                mouseX <= x + scaledWidth &&
-                mouseY >= y &&
-                mouseY <= y + scaledHeight;
+        return isInside(
+                mouseX,
+                mouseY,
+                x,
+                y,
+                width,
+                height
+        );
+    }
+
+    private boolean isInside(
+            double mouseX,
+            double mouseY,
+            int x,
+            int y,
+            int width,
+            int height
+    ) {
+        return mouseX >= x
+                && mouseX <= x + width
+                && mouseY >= y
+                && mouseY <= y + height;
     }
 
     // =========================
-    // CLICK / DRAG
+    // CLICK
     // =========================
 
     @Override
@@ -330,75 +535,107 @@ public final class HudEditorScreen extends Screen {
             MouseButtonEvent event,
             boolean doubleClick
     ) {
-        if (event.button() == 0) {
+        if (event.button() != 0) {
+            return super.mouseClicked(
+                    event,
+                    doubleClick
+            );
+        }
 
-            if (isStormTimerHovered(
+        if (isStormTimerHovered(
+                event.x(),
+                event.y()
+        )) {
+            draggingStormTimer = true;
+
+            setDragOffset(
                     event.x(),
-                    event.y()
-            )) {
-                draggingStormTimer = true;
+                    event.y(),
+                    StormSettings.stormTimerX,
+                    StormSettings.stormTimerY
+            );
 
-                dragOffsetX =
-                        event.x()
-                                - StormSettings.stormTimerX;
+            return true;
+        }
 
-                dragOffsetY =
-                        event.y()
-                                - StormSettings.stormTimerY;
+        if (isDeathTimerHovered(
+                event.x(),
+                event.y()
+        )) {
+            draggingDeathTimer = true;
 
-                return true;
-            }
-
-            if (isDeathTimerHovered(
+            setDragOffset(
                     event.x(),
-                    event.y()
-            )) {
-                draggingDeathTimer = true;
+                    event.y(),
+                    StormSettings.stormDeathTimerX,
+                    StormSettings.stormDeathTimerY
+            );
 
-                dragOffsetX =
-                        event.x()
-                                - StormSettings.stormDeathTimerX;
+            return true;
+        }
 
-                dragOffsetY =
-                        event.y()
-                                - StormSettings.stormDeathTimerY;
+        if (isLbTimerHovered(
+                event.x(),
+                event.y()
+        )) {
+            draggingLbTimer = true;
 
-                return true;
-            }
-
-            if (isLbTimerHovered(
+            setDragOffset(
                     event.x(),
-                    event.y()
-            )) {
-                draggingLbTimer = true;
+                    event.y(),
+                    StormSettings.stormLbX,
+                    StormSettings.stormLbY
+            );
 
-                dragOffsetX =
-                        event.x()
-                                - StormSettings.stormLbX;
+            return true;
+        }
 
-                dragOffsetY =
-                        event.y()
-                                - StormSettings.stormLbY;
+        if (isExplosiveArrowHovered(
+                event.x(),
+                event.y()
+        )) {
+            draggingExplosiveArrow = true;
 
-                return true;
-            }
-
-            if (isExplosiveArrowHovered(
+            setDragOffset(
                     event.x(),
-                    event.y()
-            )) {
-                draggingExplosiveArrow = true;
+                    event.y(),
+                    ExplosiveArrowSettings.damageTrackerX,
+                    ExplosiveArrowSettings.damageTrackerY
+            );
 
-                dragOffsetX =
-                        event.x()
-                                - ExplosiveArrowSettings.damageTrackerX;
+            return true;
+        }
 
-                dragOffsetY =
-                        event.y()
-                                - ExplosiveArrowSettings.damageTrackerY;
+        if (isClickProtHovered(
+                event.x(),
+                event.y()
+        )) {
+            draggingClickProt = true;
 
-                return true;
-            }
+            setDragOffset(
+                    event.x(),
+                    event.y(),
+                    TerminalClickTimerSettings.x,
+                    TerminalClickTimerSettings.y
+            );
+
+            return true;
+        }
+
+        if (isDungeonRunTrackerHovered(
+                event.x(),
+                event.y()
+        )) {
+            draggingDungeonRunTracker = true;
+
+            setDragOffset(
+                    event.x(),
+                    event.y(),
+                    DungeonRunTrackerSettings.x,
+                    DungeonRunTrackerSettings.y
+            );
+
+            return true;
         }
 
         return super.mouseClicked(
@@ -407,23 +644,48 @@ public final class HudEditorScreen extends Screen {
         );
     }
 
+    private void setDragOffset(
+            double mouseX,
+            double mouseY,
+            int hudX,
+            int hudY
+    ) {
+        dragOffsetX =
+                mouseX - hudX;
+
+        dragOffsetY =
+                mouseY - hudY;
+    }
+
+    // =========================
+    // DRAG
+    // =========================
+
     @Override
     public boolean mouseDragged(
             MouseButtonEvent event,
             double dragX,
             double dragY
     ) {
+        int newX =
+                (int) (
+                        event.x()
+                                - dragOffsetX
+                );
+
+        int newY =
+                (int) (
+                        event.y()
+                                - dragOffsetY
+                );
+
         if (draggingStormTimer) {
 
             StormSettings.stormTimerX =
-                    (int) (
-                            event.x() - dragOffsetX
-                    );
+                    newX;
 
             StormSettings.stormTimerY =
-                    (int) (
-                            event.y() - dragOffsetY
-                    );
+                    newY;
 
             clampStormTimerPosition();
 
@@ -433,14 +695,10 @@ public final class HudEditorScreen extends Screen {
         if (draggingDeathTimer) {
 
             StormSettings.stormDeathTimerX =
-                    (int) (
-                            event.x() - dragOffsetX
-                    );
+                    newX;
 
             StormSettings.stormDeathTimerY =
-                    (int) (
-                            event.y() - dragOffsetY
-                    );
+                    newY;
 
             clampDeathTimerPosition();
 
@@ -450,14 +708,10 @@ public final class HudEditorScreen extends Screen {
         if (draggingLbTimer) {
 
             StormSettings.stormLbX =
-                    (int) (
-                            event.x() - dragOffsetX
-                    );
+                    newX;
 
             StormSettings.stormLbY =
-                    (int) (
-                            event.y() - dragOffsetY
-                    );
+                    newY;
 
             clampLbTimerPosition();
 
@@ -467,16 +721,38 @@ public final class HudEditorScreen extends Screen {
         if (draggingExplosiveArrow) {
 
             ExplosiveArrowSettings.damageTrackerX =
-                    (int) (
-                            event.x() - dragOffsetX
-                    );
+                    newX;
 
             ExplosiveArrowSettings.damageTrackerY =
-                    (int) (
-                            event.y() - dragOffsetY
-                    );
+                    newY;
 
             clampExplosiveArrowPosition();
+
+            return true;
+        }
+
+        if (draggingClickProt) {
+
+            TerminalClickTimerSettings.x =
+                    newX;
+
+            TerminalClickTimerSettings.y =
+                    newY;
+
+            clampClickProtPosition();
+
+            return true;
+        }
+
+        if (draggingDungeonRunTracker) {
+
+            DungeonRunTrackerSettings.x =
+                    newX;
+
+            DungeonRunTrackerSettings.y =
+                    newY;
+
+            clampDungeonRunTrackerPosition();
 
             return true;
         }
@@ -488,11 +764,16 @@ public final class HudEditorScreen extends Screen {
         );
     }
 
+    // =========================
+    // RELEASE
+    // =========================
+
     @Override
     public boolean mouseReleased(
             MouseButtonEvent event
     ) {
         if (draggingStormTimer) {
+
             draggingStormTimer = false;
 
             saveStormTimerLayout();
@@ -501,6 +782,7 @@ public final class HudEditorScreen extends Screen {
         }
 
         if (draggingDeathTimer) {
+
             draggingDeathTimer = false;
 
             saveStormDeathTimerLayout();
@@ -509,6 +791,7 @@ public final class HudEditorScreen extends Screen {
         }
 
         if (draggingLbTimer) {
+
             draggingLbTimer = false;
 
             saveStormLbLayout();
@@ -517,6 +800,7 @@ public final class HudEditorScreen extends Screen {
         }
 
         if (draggingExplosiveArrow) {
+
             draggingExplosiveArrow = false;
 
             saveExplosiveArrowLayout();
@@ -524,7 +808,27 @@ public final class HudEditorScreen extends Screen {
             return true;
         }
 
-        return super.mouseReleased(event);
+        if (draggingClickProt) {
+
+            draggingClickProt = false;
+
+            saveClickProtLayout();
+
+            return true;
+        }
+
+        if (draggingDungeonRunTracker) {
+
+            draggingDungeonRunTracker = false;
+
+            saveDungeonRunTrackerLayout();
+
+            return true;
+        }
+
+        return super.mouseReleased(
+                event
+        );
     }
 
     // =========================
@@ -547,16 +851,13 @@ public final class HudEditorScreen extends Screen {
                 mouseX,
                 mouseY
         )) {
-            StormSettings.stormTimerScale +=
-                    change;
-
             StormSettings.stormTimerScale =
                     clampScale(
                             StormSettings.stormTimerScale
+                                    + change
                     );
 
             clampStormTimerPosition();
-
             saveStormTimerLayout();
 
             return true;
@@ -566,16 +867,13 @@ public final class HudEditorScreen extends Screen {
                 mouseX,
                 mouseY
         )) {
-            StormSettings.stormDeathTimerScale +=
-                    change;
-
             StormSettings.stormDeathTimerScale =
                     clampScale(
                             StormSettings.stormDeathTimerScale
+                                    + change
                     );
 
             clampDeathTimerPosition();
-
             saveStormDeathTimerLayout();
 
             return true;
@@ -585,16 +883,13 @@ public final class HudEditorScreen extends Screen {
                 mouseX,
                 mouseY
         )) {
-            StormSettings.stormLbScale +=
-                    change;
-
             StormSettings.stormLbScale =
                     clampScale(
                             StormSettings.stormLbScale
+                                    + change
                     );
 
             clampLbTimerPosition();
-
             saveStormLbLayout();
 
             return true;
@@ -604,17 +899,46 @@ public final class HudEditorScreen extends Screen {
                 mouseX,
                 mouseY
         )) {
-            ExplosiveArrowSettings.damageTrackerScale +=
-                    change;
-
             ExplosiveArrowSettings.damageTrackerScale =
                     clampScale(
                             ExplosiveArrowSettings.damageTrackerScale
+                                    + change
                     );
 
             clampExplosiveArrowPosition();
-
             saveExplosiveArrowLayout();
+
+            return true;
+        }
+
+        if (isClickProtHovered(
+                mouseX,
+                mouseY
+        )) {
+            TerminalClickTimerSettings.scale =
+                    clampScale(
+                            TerminalClickTimerSettings.scale
+                                    + change
+                    );
+
+            clampClickProtPosition();
+            saveClickProtLayout();
+
+            return true;
+        }
+
+        if (isDungeonRunTrackerHovered(
+                mouseX,
+                mouseY
+        )) {
+            DungeonRunTrackerSettings.scale =
+                    clampScale(
+                            DungeonRunTrackerSettings.scale
+                                    + change
+                    );
+
+            clampDungeonRunTrackerPosition();
+            saveDungeonRunTrackerLayout();
 
             return true;
         }
@@ -644,6 +968,7 @@ public final class HudEditorScreen extends Screen {
     // =========================
 
     private void clampStormTimerPosition() {
+
         int width =
                 getScaledWidth(
                         STORM_PREVIEW_TEXT,
@@ -669,6 +994,7 @@ public final class HudEditorScreen extends Screen {
     }
 
     private void clampDeathTimerPosition() {
+
         int width =
                 getScaledWidth(
                         DEATH_PREVIEW_TEXT,
@@ -694,6 +1020,7 @@ public final class HudEditorScreen extends Screen {
     }
 
     private void clampLbTimerPosition() {
+
         int width =
                 getScaledWidth(
                         LB_PREVIEW_TEXT,
@@ -719,6 +1046,7 @@ public final class HudEditorScreen extends Screen {
     }
 
     private void clampExplosiveArrowPosition() {
+
         int width =
                 getScaledWidth(
                         EXPLOSIVE_ARROW_PREVIEW_TEXT,
@@ -743,12 +1071,70 @@ public final class HudEditorScreen extends Screen {
                 );
     }
 
+    private void clampClickProtPosition() {
+
+        int width =
+                getScaledWidth(
+                        CLICK_PROT_PREVIEW_TEXT,
+                        TerminalClickTimerSettings.scale
+                );
+
+        int height =
+                getScaledHeight(
+                        TerminalClickTimerSettings.scale
+                );
+
+        TerminalClickTimerSettings.x =
+                clampX(
+                        TerminalClickTimerSettings.x,
+                        width
+                );
+
+        TerminalClickTimerSettings.y =
+                clampY(
+                        TerminalClickTimerSettings.y,
+                        height
+                );
+    }
+
+    private void clampDungeonRunTrackerPosition() {
+
+        int width =
+                getMultiLineScaledWidth(
+                        DUNGEON_RUN_TRACKER_PREVIEW,
+                        DungeonRunTrackerSettings.scale
+                );
+
+        int height =
+                getMultiLineScaledHeight(
+                        DUNGEON_RUN_TRACKER_PREVIEW,
+                        DungeonRunTrackerSettings.scale
+                );
+
+        DungeonRunTrackerSettings.x =
+                clampX(
+                        DungeonRunTrackerSettings.x,
+                        width
+                );
+
+        DungeonRunTrackerSettings.y =
+                clampY(
+                        DungeonRunTrackerSettings.y,
+                        height
+                );
+    }
+
+    // =========================
+    // SIZE HELPERS
+    // =========================
+
     private int getScaledWidth(
             String text,
             float scale
     ) {
         return Math.round(
-                this.font.width(text) * scale
+                this.font.width(text)
+                        * scale
         );
     }
 
@@ -756,7 +1142,41 @@ public final class HudEditorScreen extends Screen {
             float scale
     ) {
         return Math.round(
-                this.font.lineHeight * scale
+                this.font.lineHeight
+                        * scale
+        );
+    }
+
+    private int getMultiLineScaledWidth(
+            String[] lines,
+            float scale
+    ) {
+        int normalWidth = 0;
+
+        for (String line : lines) {
+
+            normalWidth =
+                    Math.max(
+                            normalWidth,
+                            this.font.width(line)
+                    );
+        }
+
+        return Math.round(
+                normalWidth * scale
+        );
+    }
+
+    private int getMultiLineScaledHeight(
+            String[] lines,
+            float scale
+    ) {
+        int normalHeight =
+                lines.length
+                        * (this.font.lineHeight + 1);
+
+        return Math.round(
+                normalHeight * scale
         );
     }
 
@@ -842,6 +1262,34 @@ public final class HudEditorScreen extends Screen {
 
         ObbyConfig.get().explosiveArrowDamageTrackerScale =
                 ExplosiveArrowSettings.damageTrackerScale;
+
+        ObbyConfig.save();
+    }
+
+    private void saveClickProtLayout() {
+
+        ObbyConfig.get().terminalClickTimerX =
+                TerminalClickTimerSettings.x;
+
+        ObbyConfig.get().terminalClickTimerY =
+                TerminalClickTimerSettings.y;
+
+        ObbyConfig.get().terminalClickTimerScale =
+                TerminalClickTimerSettings.scale;
+
+        ObbyConfig.save();
+    }
+
+    private void saveDungeonRunTrackerLayout() {
+
+        ObbyConfig.get().dungeonRunTrackerX =
+                DungeonRunTrackerSettings.x;
+
+        ObbyConfig.get().dungeonRunTrackerY =
+                DungeonRunTrackerSettings.y;
+
+        ObbyConfig.get().dungeonRunTrackerScale =
+                DungeonRunTrackerSettings.scale;
 
         ObbyConfig.save();
     }

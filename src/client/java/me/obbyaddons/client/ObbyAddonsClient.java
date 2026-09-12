@@ -13,6 +13,17 @@ import me.obbyaddons.client.features.dungeon.StormFeatures;
 import me.obbyaddons.client.features.dungeon.StormLastBreathTimer;
 import me.obbyaddons.client.features.dungeon.StormSettings;
 import me.obbyaddons.client.features.dungeon.StormTickTimer;
+import me.obbyaddons.client.features.dungeon.TerminalClickTimerFeature;
+import me.obbyaddons.client.features.dungeon.TerminalClickTimerSettings;
+import me.obbyaddons.client.features.dungeon.TerminatorOverlayFeature;
+import me.obbyaddons.client.features.dungeon.TerminatorOverlaySettings;
+
+import me.obbyaddons.client.features.dungeon.tracker.AthenPriceProvider;
+import me.obbyaddons.client.features.dungeon.tracker.DungeonRunHistory;
+import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTracker;
+import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerFeature;
+import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerHud;
+import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerSettings;
 
 import me.obbyaddons.client.util.ServerTickTracker;
 
@@ -26,8 +37,12 @@ public class ObbyAddonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
 
-        // Load saved settings
+        // =========================
+        // LOAD CONFIG / HISTORY
+        // =========================
+
         ObbyConfig.load();
+        DungeonRunHistory.load();
 
         // =========================
         // STORM SETTINGS
@@ -88,6 +103,13 @@ public class ObbyAddonsClient implements ClientModInitializer {
                 ObbyConfig.get().stormLbScale;
 
         // =========================
+        // TERMINATOR OVERLAY
+        // =========================
+
+        TerminatorOverlaySettings.color =
+                ObbyConfig.get().terminatorOverlayColor;
+
+        // =========================
         // EXPLOSIVE ARROW SETTINGS
         // =========================
 
@@ -109,42 +131,131 @@ public class ObbyAddonsClient implements ClientModInitializer {
         ExplosiveArrowSettings.damageTrackerScale =
                 ObbyConfig.get().explosiveArrowDamageTrackerScale;
 
-        // Load Chat Cleaner settings
+        // =========================
+        // CLICK PROT DISPLAY
+        // =========================
+
+        TerminalClickTimerSettings.clickDelayMs =
+                ObbyConfig.get().terminalClickDelayMs;
+
+        TerminalClickTimerSettings.color =
+                ObbyConfig.get().terminalClickTimerColor;
+
+        TerminalClickTimerSettings.x =
+                ObbyConfig.get().terminalClickTimerX;
+
+        TerminalClickTimerSettings.y =
+                ObbyConfig.get().terminalClickTimerY;
+
+        TerminalClickTimerSettings.scale =
+                ObbyConfig.get().terminalClickTimerScale;
+
+        // =========================
+        // DUNGEON RUN TRACKER
+        // =========================
+
+        DungeonRunTrackerSettings.enabled =
+                ObbyConfig.get().dungeonRunTrackerEnabled;
+
+        DungeonRunTrackerSettings.x =
+                ObbyConfig.get().dungeonRunTrackerX;
+
+        DungeonRunTrackerSettings.y =
+                ObbyConfig.get().dungeonRunTrackerY;
+
+        DungeonRunTrackerSettings.scale =
+                ObbyConfig.get().dungeonRunTrackerScale;
+
+        DungeonRunTrackerSettings.color =
+                ObbyConfig.get().dungeonRunTrackerColor;
+
+        // =========================
+        // CHAT CLEANER
+        // =========================
+
         ChatRules.loadConfig();
 
-        // Register commands
+        // =========================
+        // COMMANDS
+        // =========================
+
         ObbyAddonsCommands.register();
 
-        // Tick / dungeon features
+        // =========================
+        // RUNTIME / HUD SYSTEMS
+        // =========================
+
         ServerTickTracker.init();
+
         StormTickTimer.init();
         StormLastBreathTimer.init();
+
         ExplosiveArrowDamageTracker.init();
 
-        // Wait until Minecraft is fully initialized
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+        /*
+         * Run tracking stays active even if the HUD
+         * is toggled off.
+         *
+         * We still need this data for:
+         * - Croesus
+         * - Kismets
+         * - chest history
+         * - /oa loot
+         */
+        DungeonRunTracker.init();
+        DungeonRunTrackerHud.init();
 
-            ChatCleanerFeature chatCleaner =
-                    new ChatCleanerFeature();
+        /*
+         * Start the live Athen price cache.
+         *
+         * It fetches immediately, then refreshes
+         * automatically every 10 minutes.
+         */
+        AthenPriceProvider.start();
 
-            FeatureManager.register(chatCleaner);
+        // =========================
+        // FEATURES
+        // =========================
 
-            FeatureManager.register(
-                    new StormFeatures()
-            );
+        ClientLifecycleEvents.CLIENT_STARTED.register(
+                client -> {
 
-            FeatureManager.register(
-                    new ExplosiveArrowFeature()
-            );
+                    ChatCleanerFeature chatCleaner =
+                            new ChatCleanerFeature();
 
-            // Apply saved Chat Cleaner state
-            chatCleaner.setEnabled(
-                    ObbyConfig.get().chatCleanerEnabled
-            );
+                    FeatureManager.register(
+                            chatCleaner
+                    );
 
-            System.out.println(
-                    "[ObbyAddons] Client initialized."
-            );
-        });
+                    FeatureManager.register(
+                            new StormFeatures()
+                    );
+
+                    FeatureManager.register(
+                            new ExplosiveArrowFeature()
+                    );
+
+                    FeatureManager.register(
+                            new TerminatorOverlayFeature()
+                    );
+
+                    FeatureManager.register(
+                            new TerminalClickTimerFeature()
+                    );
+
+                    FeatureManager.register(
+                            new DungeonRunTrackerFeature()
+                    );
+
+                    // Apply saved Chat Cleaner state
+                    chatCleaner.setEnabled(
+                            ObbyConfig.get().chatCleanerEnabled
+                    );
+
+                    System.out.println(
+                            "[ObbyAddons] Client initialized."
+                    );
+                }
+        );
     }
 }

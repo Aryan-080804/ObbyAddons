@@ -3,8 +3,11 @@
 	"package": "me.obbyaddons.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"AbstractContainerScreenMixin",
 		"ExampleClientMixin",
-		"ConnectionMixin"
+		"ConnectionMixin",
+		"GuiGraphicsExtractorMixin",
+		"ScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
