@@ -118,6 +118,9 @@ public final class ObbyAddonsScreen extends Screen {
 
         Feature dungeonRunTracker =
                 FeatureManager.getFeature("Dungeon Run Tracker");
+        
+        Feature dungeonItemHighlight =
+                FeatureManager.getFeature("Item Highlight");
 
         String search = getSearchText();
 
@@ -143,6 +146,9 @@ public final class ObbyAddonsScreen extends Screen {
         boolean showDungeonRunTracker =
                 matchesSearch(dungeonRunTracker, search);
 
+        boolean showDungeonItemHighlight =
+                matchesSearch(dungeonItemHighlight, search);
+
         drawGeneralPanel(
                 graphics,
                 mouseX,
@@ -161,10 +167,12 @@ public final class ObbyAddonsScreen extends Screen {
                 explosiveArrow,
                 terminalClickTimer,
                 dungeonRunTracker,
+                dungeonItemHighlight,
                 showStormFeatures,
                 showExplosiveArrow,
                 showTerminalClickTimer,
-                showDungeonRunTracker
+                showDungeonRunTracker,
+                showDungeonItemHighlight
         );
 
         drawSettingsWindows(
@@ -294,10 +302,12 @@ public final class ObbyAddonsScreen extends Screen {
             Feature explosiveArrow,
             Feature terminalClickTimer,
             Feature dungeonRunTracker,
+            Feature dungeonItemHighlight,
             boolean showStormFeatures,
             boolean showExplosiveArrow,
             boolean showTerminalClickTimer,
-            boolean showDungeonRunTracker
+            boolean showDungeonRunTracker,
+            boolean showDungeonItemHighlight
     ) {
         int featureCount = 0;
 
@@ -315,6 +325,10 @@ public final class ObbyAddonsScreen extends Screen {
         }
 
         if (showDungeonRunTracker) {
+                featureCount++;
+        }
+
+        if (showDungeonItemHighlight) {
                 featureCount++;
         }
 
@@ -383,6 +397,20 @@ public final class ObbyAddonsScreen extends Screen {
                     rowY,
                     mouseX,
                     mouseY
+            );
+
+            rowY += ROW_HEIGHT;
+        }
+
+        if (showDungeonItemHighlight) {
+
+            drawFeatureRow(
+                graphics,
+                dungeonItemHighlight,
+                DUNGEON_X,
+                rowY,
+                mouseX,
+                mouseY
             );
 
             rowY += ROW_HEIGHT;

@@ -25,6 +25,13 @@ import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerFeature;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerHud;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerSettings;
 
+import me.obbyaddons.client.features.dungeon.DungeonBossTracker;
+import me.obbyaddons.client.features.dungeon.DungeonItemHighlight;
+import me.obbyaddons.client.features.dungeon.DungeonItemHighlightFeature;
+import me.obbyaddons.client.features.dungeon.DungeonItemHighlightRenderer;
+import me.obbyaddons.client.features.dungeon.DungeonItemHighlightSettings;
+import me.obbyaddons.client.features.dungeon.DungeonLocationTracker;
+
 import me.obbyaddons.client.util.ServerTickTracker;
 
 import me.obbyaddons.feature.FeatureManager;
@@ -170,6 +177,13 @@ public class ObbyAddonsClient implements ClientModInitializer {
                 ObbyConfig.get().dungeonRunTrackerColor;
 
         // =========================
+        // ITEM HIGHLIGHT
+        // =========================
+
+        DungeonItemHighlightSettings.enabled =
+                ObbyConfig.get().dungeonItemHighlightEnabled;
+
+        // =========================
         // CHAT CLEANER
         // =========================
 
@@ -191,6 +205,11 @@ public class ObbyAddonsClient implements ClientModInitializer {
         StormLastBreathTimer.init();
 
         ExplosiveArrowDamageTracker.init();
+
+        DungeonLocationTracker.init();
+        DungeonBossTracker.init();
+        DungeonItemHighlight.init();
+        DungeonItemHighlightRenderer.init();
 
         /*
          * Run tracking stays active even if the HUD
@@ -245,6 +264,10 @@ public class ObbyAddonsClient implements ClientModInitializer {
 
                     FeatureManager.register(
                             new DungeonRunTrackerFeature()
+                    );
+
+                    FeatureManager.register(
+                            new DungeonItemHighlightFeature()
                     );
 
                     // Apply saved Chat Cleaner state

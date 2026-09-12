@@ -127,6 +127,12 @@ public final class ObbyConfig {
 
     public int dungeonRunTrackerColor = 0xFFFFFFFF;
 
+    // =========================
+    // ITEM HIGHLIGHT
+    // =========================
+
+    public boolean dungeonItemHighlightEnabled = false;
+
     private ObbyConfig() {
     }
 
