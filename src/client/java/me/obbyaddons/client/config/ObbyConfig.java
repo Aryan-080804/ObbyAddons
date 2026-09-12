@@ -119,6 +119,7 @@ public final class ObbyConfig {
     // =========================
 
     public boolean dungeonRunTrackerEnabled = true;
+    public boolean dungeonRunTrackerHudEnabled = true;
 
     public int dungeonRunTrackerX = 10;
     public int dungeonRunTrackerY = 120;

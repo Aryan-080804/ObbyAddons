@@ -154,6 +154,11 @@ public final class DungeonChestTracker {
                 continue;
             }
 
+            String displayName =
+                    getLootDisplayName(
+                            stack
+                    );
+
             String itemId =
                     getPricingItemId(
                             stack
@@ -163,7 +168,22 @@ public final class DungeonChestTracker {
                     itemId == null
                             || itemId.isBlank()
             ) {
-                continue;
+
+                itemId =
+                        getFallbackItemId(
+                                displayName
+                        );
+
+                if (itemId.isBlank()) {
+                    continue;
+                }
+
+                System.out.println(
+                        "[ObbyAddons] Reward item using fallback ID: "
+                                + displayName
+                                + " -> "
+                                + itemId
+                );
             }
 
             if (isIgnoredMenuItem(itemId)) {
@@ -172,11 +192,6 @@ public final class DungeonChestTracker {
 
             int quantity =
                     getLootQuantity(
-                            stack
-                    );
-
-            String displayName =
-                    getLootDisplayName(
                             stack
                     );
 
@@ -286,6 +301,58 @@ public final class DungeonChestTracker {
         return id == null
                 ? ""
                 : id;
+    }
+
+    private static String getFallbackItemId(
+            String displayName
+    ) {
+
+        if (
+                displayName == null
+                        || displayName.isBlank()
+        ) {
+            return "";
+        }
+
+        String normalized =
+                displayName.trim()
+                        .replaceFirst(
+                                "(?i)\\s+[x×]\\d+$",
+                                ""
+                )
+                        .toUpperCase(
+                                Locale.ROOT
+                        )
+                        .replace(
+                                "’S",
+                                ""
+                        )
+                        .replace(
+                                "'S",
+                                ""
+                        )
+                        .replace(
+                                "’",
+                                ""
+                        )
+                        .replace(
+                                "'",
+                                ""
+                        )
+                        .replaceAll(
+                                "[^A-Z0-9]+",
+                                "_"
+                        )
+                        .replaceAll(
+                                "^_+|_+$",
+                                ""
+                        );
+
+        if (normalized.isBlank()) {
+            return "";
+        }
+
+        return normalized;
     }
 
     // =========================
@@ -976,7 +1043,10 @@ public final class DungeonChestTracker {
         return upper.equals("KISMET_FEATHER")
                 || upper.equals("DUNGEON_CHEST_KEY")
                 || upper.equals("ARROW")
-                || upper.equals("BARRIER");
+                || upper.equals("BARRIER")
+                || upper.equals("CLOSE")
+                || upper.equals("GO_BACK")
+                || upper.equals("BACK");
     }
 
     // =========================

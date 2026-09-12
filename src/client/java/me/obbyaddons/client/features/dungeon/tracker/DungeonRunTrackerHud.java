@@ -20,7 +20,10 @@ public final class DungeonRunTrackerHud {
                 ),
                 (graphics, deltaTracker) -> {
 
-                    if (!DungeonRunTrackerSettings.enabled) {
+                    if (
+                            !DungeonRunTrackerSettings.enabled
+                                    || !DungeonRunTrackerSettings.hudEnabled
+                    ) {
                         return;
                     }
 

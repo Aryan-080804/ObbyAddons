@@ -1720,7 +1720,10 @@ public final class DungeonLootScreen extends Screen {
                 name != null
                         && !name.isBlank()
         ) {
-            return name;
+            return name.replaceFirst(
+                    "(?i)\\s+[x×]\\d+$",
+                    ""
+            );
         }
 
         String itemId =

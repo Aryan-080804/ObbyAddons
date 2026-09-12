@@ -111,9 +111,6 @@ public final class DungeonRewardScreenTracker {
 
             seenKismetSignals.clear();
 
-            logRewardScreenDetected(
-                    title
-            );
         }
 
         if (
@@ -387,13 +384,21 @@ public final class DungeonRewardScreenTracker {
                                 Locale.ROOT
                         );
 
-        return upper.equals("WOOD CHEST")
+        return upper.equals("WOOD")
+                || upper.equals("WOOD CHEST")
+                || upper.equals("GOLD")
                 || upper.equals("GOLD CHEST")
+                || upper.equals("DIAMOND")
                 || upper.equals("DIAMOND CHEST")
+                || upper.equals("EMERALD")
                 || upper.equals("EMERALD CHEST")
+                || upper.equals("OBSIDIAN")
                 || upper.equals("OBSIDIAN CHEST")
+                || upper.equals("BEDROCK")
                 || upper.equals("BEDROCK CHEST")
+                || upper.equals("FREE")
                 || upper.equals("FREE CHEST")
+                || upper.equals("PAID")
                 || upper.equals("PAID CHEST");
     }
 
@@ -415,38 +420,6 @@ public final class DungeonRewardScreenTracker {
                 .matches();
     }
 
-    // =========================
-    // DEBUG
-    // =========================
-
-    private static void logRewardScreenDetected(
-            String title
-    ) {
-
-        DungeonRunRecord run =
-                DungeonRewardContext
-                        .getCurrentRewardRun();
-
-        if (run == null) {
-
-            System.out.println(
-                    "[ObbyAddons] Reward-related screen detected: "
-                            + title
-                            + " / no reward run context"
-            );
-
-            return;
-        }
-
-        System.out.println(
-                "[ObbyAddons] Reward-related screen detected: "
-                        + title
-                        + " / run "
-                        + run.getId()
-                        + " / "
-                        + run.getFloor()
-        );
-    }
 
     // =========================
     // GETTERS

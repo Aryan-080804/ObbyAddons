@@ -38,6 +38,7 @@ public final class ObbyAddonsScreen extends Screen {
     private ExplosiveArrowSettingsWindow explosiveArrowSettingsWindow;
     private TerminatorOverlaySettingsWindow terminatorOverlaySettingsWindow;
     private TerminalClickTimerSettingsWindow terminalClickTimerSettingsWindow;
+    private DungeonRunTrackerSettingsWindow dungeonRunTrackerSettingsWindow;
 
     private EditBox searchBox;
 
@@ -567,7 +568,16 @@ public final class ObbyAddonsScreen extends Screen {
                     mouseX,
                     mouseY
             );
-        }       
+        }     
+
+        if (dungeonRunTrackerSettingsWindow != null) {
+                dungeonRunTrackerSettingsWindow.render(
+                    this,
+                    graphics,
+                    mouseX,
+                    mouseY
+            );
+        }  
     }
 
     @Override
@@ -593,7 +603,11 @@ public final class ObbyAddonsScreen extends Screen {
 
         if (handleTerminalClickTimerWindowClick(event)) {
             return true;
-        }       
+        }    
+
+        if (handleDungeonRunTrackerWindowClick(event)) {
+            return true;
+        }   
 
         if (hoveredFeature != null) {
 
@@ -633,6 +647,12 @@ public final class ObbyAddonsScreen extends Screen {
                     openTerminalClickTimerWindow();
                     return true;
                 }
+
+                if (name.equals("Dungeon Run Tracker")) {
+                    openDungeonRunTrackerWindow();
+                    return true;
+                }
+
             }
         }
 
@@ -685,6 +705,72 @@ public final class ObbyAddonsScreen extends Screen {
 
         return false;
     }
+
+    private boolean handleDungeonRunTrackerWindowClick(
+            MouseButtonEvent event
+    ) {
+        if (dungeonRunTrackerSettingsWindow == null) {
+                return false;
+        }
+
+        if (
+                event.button() == 0
+                        && dungeonRunTrackerSettingsWindow
+                        .isCloseButtonHovered(
+                                event.x(),
+                                event.y()
+                        )
+        ) {
+                dungeonRunTrackerSettingsWindow = null;
+                return true;
+        }
+
+        if (
+                dungeonRunTrackerSettingsWindow.handleClick(
+                        event.x(),
+                        event.y(),
+                        event.button()
+                )
+        ) {
+                return true;
+        }
+
+        if (
+                event.button() == 0
+                        && dungeonRunTrackerSettingsWindow
+                        .isHeaderHovered(
+                                event.x(),
+                                event.y()
+                        )
+        ) {
+                dungeonRunTrackerSettingsWindow.startDragging(
+                        event.x(),
+                        event.y()
+                );
+
+                return true;
+        }
+
+        return false;
+    }
+
+    private void openDungeonRunTrackerWindow() {
+        int windowWidth = 190;
+        int windowHeight = 40;
+
+        int centerX =
+                (this.width - windowWidth) / 2;
+
+        int centerY =
+                (this.height - windowHeight) / 2;
+
+        dungeonRunTrackerSettingsWindow =
+                new DungeonRunTrackerSettingsWindow(
+                        centerX,
+                        centerY
+                );
+    }
+
 
     private boolean handleStormWindowClick(
             MouseButtonEvent event
@@ -1033,10 +1119,23 @@ public final class ObbyAddonsScreen extends Screen {
         terminatorOverlaySettingsWindow.dragTo(
                 event.x(),
                 event.y()
-        );
+            );
 
-        return true;
+            return true;
         }
+
+        if (
+        dungeonRunTrackerSettingsWindow != null
+                && dungeonRunTrackerSettingsWindow.isDragging()
+        ) {
+        dungeonRunTrackerSettingsWindow.dragTo(
+                event.x(),
+                event.y()
+            );
+
+            return true;
+        }
+
 
         return super.mouseDragged(
                 event,
@@ -1096,6 +1195,10 @@ public final class ObbyAddonsScreen extends Screen {
 
             terminalClickTimerSettingsWindow.stopDragging();
             return true;
+        }
+
+        if (dungeonRunTrackerSettingsWindow != null) {
+                dungeonRunTrackerSettingsWindow.stopDragging();
         }
 
         return super.mouseReleased(event);

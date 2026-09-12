@@ -169,6 +169,9 @@ public class ObbyAddonsClient implements ClientModInitializer {
 
         DungeonRunTrackerSettings.enabled =
                 ObbyConfig.get().dungeonRunTrackerEnabled;
+        
+        DungeonRunTrackerSettings.hudEnabled =
+                ObbyConfig.get().dungeonRunTrackerHudEnabled;
 
         DungeonRunTrackerSettings.x =
                 ObbyConfig.get().dungeonRunTrackerX;

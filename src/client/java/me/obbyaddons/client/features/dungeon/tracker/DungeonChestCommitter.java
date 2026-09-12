@@ -104,10 +104,27 @@ public final class DungeonChestCommitter {
          * Copy the list so later GUI changes cannot mutate
          * the preview we intend to commit.
          */
+        long chestCostCoins =
+                snapshot.chestCostCoins();
+
+        if (
+                pendingSnapshot != null
+                        && pendingRunId.equals(runId)
+                        && chestTitle.equalsIgnoreCase(
+                                pendingSnapshot.chestTitle()
+                        )
+        ) {
+            chestCostCoins =
+                    Math.max(
+                            chestCostCoins,
+                            pendingSnapshot.chestCostCoins()
+                    );
+        }
+
         pendingSnapshot =
                 new DungeonChestTracker.ChestSnapshot(
                         chestTitle,
-                        snapshot.chestCostCoins(),
+                        chestCostCoins,
                         List.copyOf(
                                 snapshot.lootItems()
                         )
@@ -125,7 +142,7 @@ public final class DungeonChestCommitter {
                         + snapshot.lootItems().size()
                         + " items"
                         + " / cost "
-                        + snapshot.chestCostCoins()
+                        + chestCostCoins
         );
 
         return true;

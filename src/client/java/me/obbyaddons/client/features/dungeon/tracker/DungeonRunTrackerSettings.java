@@ -8,6 +8,7 @@ public final class DungeonRunTrackerSettings {
     }
 
     public static boolean enabled = true;
+    public static boolean hudEnabled = true;
 
     public static int x = 10;
     public static int y = 120;
@@ -43,6 +44,17 @@ public final class DungeonRunTrackerSettings {
 
         ObbyConfig.get().dungeonRunTrackerScale =
                 scale;
+
+        ObbyConfig.save();
+    }
+
+    public static void setHudEnabled(
+            boolean enabled
+    ) {
+        hudEnabled = enabled;
+
+        ObbyConfig.get().dungeonRunTrackerHudEnabled =
+                enabled;
 
         ObbyConfig.save();
     }
