@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -39,7 +40,6 @@ public final class AthenPriceProvider {
     private static final ScheduledExecutorService EXECUTOR =
             Executors.newSingleThreadScheduledExecutor(
                     runnable -> {
-
                         Thread thread =
                                 new Thread(
                                         runnable,
@@ -53,10 +53,10 @@ public final class AthenPriceProvider {
             );
 
     /*
-     * Current live prices.
+     * Current live Athen prices.
      *
-     * The map is replaced after every successful
-     * Athen refresh.
+     * These maps are fully replaced after every
+     * successful refresh.
      */
     private static volatile Map<String, Double> prices =
             Map.of();
@@ -93,7 +93,7 @@ public final class AthenPriceProvider {
         );
 
         /*
-         * Then refresh every 10 minutes.
+         * Refresh every 10 minutes afterward.
          */
         EXECUTOR.scheduleAtFixedRate(
                 AthenPriceProvider::refreshSafely,
@@ -189,7 +189,7 @@ public final class AthenPriceProvider {
 
         /*
          * Never wipe a working cache because Athen
-         * returned an empty/invalid response.
+         * returned an empty or malformed response.
          */
         if (nextPrices.isEmpty()) {
 
@@ -227,6 +227,7 @@ public final class AthenPriceProvider {
             Map<String, Double> nextPrices,
             Map<String, String> nextSources
     ) {
+
         if (section == null) {
             return;
         }
@@ -235,6 +236,7 @@ public final class AthenPriceProvider {
                 Map.Entry<String, JsonElement> entry
                 : section.entrySet()
         ) {
+
             if (!entry.getValue().isJsonObject()) {
                 continue;
             }
@@ -296,6 +298,7 @@ public final class AthenPriceProvider {
             Map<String, Double> nextPrices,
             Map<String, String> nextSources
     ) {
+
         if (section == null) {
             return;
         }
@@ -304,6 +307,7 @@ public final class AthenPriceProvider {
                 Map.Entry<String, JsonElement> entry
                 : section.entrySet()
         ) {
+
             if (!entry.getValue().isJsonObject()) {
                 continue;
             }
@@ -352,25 +356,78 @@ public final class AthenPriceProvider {
             }
 
             /*
-             * If an auction price already exists,
-             * keep it.
+             * Keep the auction price if the same item
+             * already exists in the auction-house data.
              */
             if (
-                    !nextPrices.containsKey(
+                    nextPrices.containsKey(
                             entry.getKey()
                     )
             ) {
-                nextPrices.put(
-                        entry.getKey(),
-                        price
-                );
-
-                nextSources.put(
-                        entry.getKey(),
-                        "bazaar"
-                );
+                continue;
             }
+
+            nextPrices.put(
+                    entry.getKey(),
+                    price
+            );
+
+            nextSources.put(
+                    entry.getKey(),
+                    "bazaar"
+            );
         }
+    }
+
+    // =========================
+    // ITEM ID RESOLUTION
+    // =========================
+
+    /*
+     * Some Hypixel item IDs do not match the IDs
+     * exposed by Athen.
+     *
+     * Resolve those aliases in one place so new
+     * loot and previously saved run history both
+     * use the correct live price.
+     */
+    private static String resolvePriceId(
+            String itemId
+    ) {
+
+        if (
+                itemId == null
+                        || itemId.isBlank()
+        ) {
+            return "";
+        }
+
+        String normalized =
+                itemId.trim()
+                        .toUpperCase(
+                                Locale.ROOT
+                        );
+
+        return switch (normalized) {
+
+            case "APEX_DRAGON_SHARD" ->
+                    "SHARD_APEX_DRAGON";
+
+            case "POWER_DRAGON_SHARD" ->
+                    "SHARD_POWER_DRAGON";
+
+            case "BONZO_SHARD" ->
+                    "SHARD_BONZO";
+
+            case "SCARF_SHARD" ->
+                    "SHARD_SCARF";
+
+            case "THORN_SHARD" ->
+                    "SHARD_THORN";
+
+            default ->
+                    itemId;
+        };
     }
 
     // =========================
@@ -380,16 +437,19 @@ public final class AthenPriceProvider {
     public static long getPriceCoins(
             String itemId
     ) {
-        if (
-                itemId == null
-                        || itemId.isBlank()
-        ) {
+
+        String resolvedId =
+                resolvePriceId(
+                        itemId
+                );
+
+        if (resolvedId.isBlank()) {
             return 0L;
         }
 
         Double price =
                 prices.get(
-                        itemId
+                        resolvedId
                 );
 
         if (price == null) {
@@ -407,15 +467,18 @@ public final class AthenPriceProvider {
     public static double getPrice(
             String itemId
     ) {
-        if (
-                itemId == null
-                        || itemId.isBlank()
-        ) {
+
+        String resolvedId =
+                resolvePriceId(
+                        itemId
+                );
+
+        if (resolvedId.isBlank()) {
             return 0.0D;
         }
 
         return prices.getOrDefault(
-                itemId,
+                resolvedId,
                 0.0D
         );
     }
@@ -423,15 +486,18 @@ public final class AthenPriceProvider {
     public static String getSource(
             String itemId
     ) {
-        if (
-                itemId == null
-                        || itemId.isBlank()
-        ) {
+
+        String resolvedId =
+                resolvePriceId(
+                        itemId
+                );
+
+        if (resolvedId.isBlank()) {
             return "";
         }
 
         return sources.getOrDefault(
-                itemId,
+                resolvedId,
                 ""
         );
     }
@@ -439,9 +505,15 @@ public final class AthenPriceProvider {
     public static boolean hasPrice(
             String itemId
     ) {
-        return itemId != null
-                && prices.containsKey(
+
+        String resolvedId =
+                resolvePriceId(
                         itemId
+                );
+
+        return !resolvedId.isBlank()
+                && prices.containsKey(
+                        resolvedId
                 );
     }
 
@@ -463,6 +535,7 @@ public final class AthenPriceProvider {
             JsonObject object,
             String key
     ) {
+
         if (object == null) {
             return null;
         }
@@ -495,6 +568,7 @@ public final class AthenPriceProvider {
     private static Double firstPositive(
             Double... values
     ) {
+
         for (Double value : values) {
 
             if (

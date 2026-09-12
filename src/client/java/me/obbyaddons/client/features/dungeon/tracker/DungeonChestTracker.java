@@ -276,7 +276,14 @@ public final class DungeonChestTracker {
             }
         }
 
-        return skyblockId;
+        return switch (skyblockId.toUpperCase(Locale.ROOT)) {
+            case "APEX_DRAGON_SHARD" -> "SHARD_APEX_DRAGON";
+            case "POWER_DRAGON_SHARD" -> "SHARD_POWER_DRAGON";
+            case "BONZO_SHARD" -> "SHARD_BONZO";
+            case "SCARF_SHARD" -> "SHARD_SCARF";
+            case "THORN_SHARD" -> "SHARD_THORN";
+            default -> skyblockId;
+        };
     }
 
     private static String getSkyblockItemId(
