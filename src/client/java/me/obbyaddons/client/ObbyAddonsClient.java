@@ -6,17 +6,22 @@ import me.obbyaddons.client.config.ObbyConfig;
 import me.obbyaddons.client.features.chat.ChatCleanerFeature;
 import me.obbyaddons.client.features.chat.ChatRules;
 
-import me.obbyaddons.client.features.dungeon.ExplosiveArrowDamageTracker;
-import me.obbyaddons.client.features.dungeon.ExplosiveArrowFeature;
-import me.obbyaddons.client.features.dungeon.ExplosiveArrowSettings;
-import me.obbyaddons.client.features.dungeon.StormFeatures;
-import me.obbyaddons.client.features.dungeon.StormLastBreathTimer;
-import me.obbyaddons.client.features.dungeon.StormSettings;
-import me.obbyaddons.client.features.dungeon.StormTickTimer;
-import me.obbyaddons.client.features.dungeon.TerminalClickTimerFeature;
-import me.obbyaddons.client.features.dungeon.TerminalClickTimerSettings;
-import me.obbyaddons.client.features.dungeon.TerminatorOverlayFeature;
-import me.obbyaddons.client.features.dungeon.TerminatorOverlaySettings;
+import me.obbyaddons.client.features.dungeon.explosivearrow.ExplosiveArrowDamageTracker;
+import me.obbyaddons.client.features.dungeon.explosivearrow.ExplosiveArrowFeature;
+import me.obbyaddons.client.features.dungeon.explosivearrow.ExplosiveArrowSettings;
+
+import me.obbyaddons.client.features.dungeon.storm.StormFeatures;
+import me.obbyaddons.client.features.dungeon.storm.StormLastBreathTimer;
+import me.obbyaddons.client.features.dungeon.storm.StormSettings;
+import me.obbyaddons.client.features.dungeon.storm.StormTickTimer;
+
+import me.obbyaddons.client.features.dungeon.clickprot.TerminalClickTimer;
+import me.obbyaddons.client.features.dungeon.clickprot.TerminalClickTimerFeature;
+import me.obbyaddons.client.features.dungeon.clickprot.TerminalClickTimerSettings;
+
+import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlayFeature;
+import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlayRenderer;
+import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlaySettings;
 
 import me.obbyaddons.client.features.dungeon.tracker.AthenPriceProvider;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunHistory;
@@ -25,12 +30,13 @@ import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerFeature;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerHud;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerSettings;
 
-import me.obbyaddons.client.features.dungeon.DungeonBossTracker;
-import me.obbyaddons.client.features.dungeon.DungeonItemHighlight;
-import me.obbyaddons.client.features.dungeon.DungeonItemHighlightFeature;
-import me.obbyaddons.client.features.dungeon.DungeonItemHighlightRenderer;
-import me.obbyaddons.client.features.dungeon.DungeonItemHighlightSettings;
-import me.obbyaddons.client.features.dungeon.DungeonLocationTracker;
+import me.obbyaddons.client.features.dungeon.shared.DungeonBossTracker;
+import me.obbyaddons.client.features.dungeon.shared.DungeonLocationTracker;
+
+import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlight;
+import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlightFeature;
+import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlightRenderer;
+import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlightSettings;
 
 import me.obbyaddons.client.util.ServerTickTracker;
 

@@ -1,6 +1,6 @@
 package me.obbyaddons.client.gui;
 
-import me.obbyaddons.client.features.dungeon.TerminalClickTimerSettings;
+import me.obbyaddons.client.features.dungeon.clickprot.TerminalClickTimerSettings;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;

@@ -1,6 +1,6 @@
 package me.obbyaddons.client.mixin;
 
-import me.obbyaddons.client.features.dungeon.TerminatorOverlayRenderer;
+import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlayRenderer;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

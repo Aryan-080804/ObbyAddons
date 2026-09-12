@@ -1,9 +1,9 @@
 package me.obbyaddons.client.gui;
 
 import me.obbyaddons.client.config.ObbyConfig;
-import me.obbyaddons.client.features.dungeon.ExplosiveArrowSettings;
-import me.obbyaddons.client.features.dungeon.StormSettings;
-import me.obbyaddons.client.features.dungeon.TerminalClickTimerSettings;
+import me.obbyaddons.client.features.dungeon.explosivearrow.ExplosiveArrowSettings;
+import me.obbyaddons.client.features.dungeon.storm.StormSettings;
+import me.obbyaddons.client.features.dungeon.clickprot.TerminalClickTimerSettings;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerSettings;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;

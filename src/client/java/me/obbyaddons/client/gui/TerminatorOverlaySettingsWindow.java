@@ -1,6 +1,6 @@
 package me.obbyaddons.client.gui;
 
-import me.obbyaddons.client.features.dungeon.TerminatorOverlaySettings;
+import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlaySettings;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;

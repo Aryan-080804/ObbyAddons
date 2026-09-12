@@ -1,7 +1,7 @@
 package me.obbyaddons.client.mixin;
 
-import me.obbyaddons.client.features.dungeon.DungeonItemHighlight;
-import me.obbyaddons.client.features.dungeon.DungeonItemHighlightSettings;
+import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlight;
+import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlightSettings;
 
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;

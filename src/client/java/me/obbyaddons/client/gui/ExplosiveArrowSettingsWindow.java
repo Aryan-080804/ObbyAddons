@@ -1,7 +1,7 @@
 package me.obbyaddons.client.gui;
 
 import me.obbyaddons.client.config.ObbyConfig;
-import me.obbyaddons.client.features.dungeon.ExplosiveArrowSettings;
+import me.obbyaddons.client.features.dungeon.explosivearrow.ExplosiveArrowSettings;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 

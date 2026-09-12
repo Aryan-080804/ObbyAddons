@@ -1,6 +1,6 @@
 package me.obbyaddons.client.mixin;
 
-import me.obbyaddons.client.features.dungeon.TerminalClickTimer;
+import me.obbyaddons.client.features.dungeon.clickprot.TerminalClickTimer;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRewardScreenTracker;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
