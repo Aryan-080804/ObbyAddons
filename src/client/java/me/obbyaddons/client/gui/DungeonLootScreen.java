@@ -5,11 +5,17 @@ import me.obbyaddons.client.features.dungeon.tracker.DungeonLootItem;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunHistory;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunRecord;
 
+import me.obbyaddons.client.features.dungeon.tracker.DungeonChestTracker;
+import net.minecraft.world.item.ItemStack;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.TagParser;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,12 +30,17 @@ public final class DungeonLootScreen extends Screen {
     // LAYOUT
     // =========================
 
-    private static final int PANEL_WIDTH = 720;
-    private static final int PANEL_HEIGHT = 420;
+    private static final int TARGET_PANEL_WIDTH = 900;
+    private static final int TARGET_PANEL_HEIGHT = 520;
 
-    private static final int TITLE_HEIGHT = 28;
-    private static final int FILTER_HEIGHT = 46;
-    private static final int SUMMARY_HEIGHT = 62;
+    private static final int PANEL_MARGIN = 6;
+
+    private static final double LEFT_PANEL_RATIO =
+            0.35D;
+
+    private static final int TITLE_HEIGHT = 32;
+    private static final int FILTER_HEIGHT = 50;
+    private static final int SUMMARY_HEIGHT = 70;
 
     private static final int CONTENT_TOP =
             TITLE_HEIGHT + FILTER_HEIGHT;
@@ -37,11 +48,10 @@ public final class DungeonLootScreen extends Screen {
     private static final int CONTENT_BOTTOM_PADDING =
             SUMMARY_HEIGHT + 8;
 
-    private static final int LEFT_PANEL_WIDTH = 390;
-    private static final int ROW_HEIGHT = 18;
+    private static final int ROW_HEIGHT = 22;
 
-    private static final int CLEAR_BUTTON_WIDTH = 82;
-    private static final int CLEAR_BUTTON_HEIGHT = 16;
+    private static final int CLEAR_BUTTON_WIDTH = 92;
+    private static final int CLEAR_BUTTON_HEIGHT = 18;
 
     // =========================
     // COLORS
@@ -152,6 +162,53 @@ public final class DungeonLootScreen extends Screen {
         );
     }
 
+    private int getPanelWidth() {
+
+        return Math.min(
+                TARGET_PANEL_WIDTH,
+                Math.max(
+                        1,
+                        this.width - PANEL_MARGIN * 2
+                )
+        );
+    }
+
+    private int getPanelHeight() {
+
+        return Math.min(
+                TARGET_PANEL_HEIGHT,
+                Math.max(
+                        1,
+                        this.height - PANEL_MARGIN * 2
+                )
+        );
+    }
+
+    private int getLeftPanelWidth() {
+
+        return (int) Math.round(
+                getPanelWidth()
+                        * LEFT_PANEL_RATIO
+        );
+    }
+
+    private int getPanelX() {
+
+        return (this.width - getPanelWidth()) / 2;
+    }
+
+    private int getPanelY() {
+
+        return (this.height - getPanelHeight()) / 2;
+    }
+
+    private int getDividerX(
+            int panelX
+    ) {
+
+        return panelX + getLeftPanelWidth();
+    }
+
     @Override
     public void extractRenderState(
             GuiGraphicsExtractor graphics,
@@ -167,16 +224,10 @@ public final class DungeonLootScreen extends Screen {
         );
 
         int panelX =
-                Math.max(
-                        10,
-                        (this.width - PANEL_WIDTH) / 2
-                );
+                getPanelX();
 
         int panelY =
-                Math.max(
-                        10,
-                        (this.height - PANEL_HEIGHT) / 2
-                );
+                getPanelY();
 
         List<DungeonRunRecord> runs =
                 getFilteredRuns();
@@ -250,15 +301,15 @@ public final class DungeonLootScreen extends Screen {
         graphics.fill(
                 x,
                 y,
-                x + PANEL_WIDTH,
-                y + PANEL_HEIGHT,
+                x + getPanelWidth(),
+                y + getPanelHeight(),
                 BACKGROUND
         );
 
         graphics.fill(
                 x,
                 y,
-                x + PANEL_WIDTH,
+                x + getPanelWidth(),
                 y + 2,
                 PURPLE
         );
@@ -267,23 +318,23 @@ public final class DungeonLootScreen extends Screen {
                 x,
                 y,
                 x + 1,
-                y + PANEL_HEIGHT,
+                y + getPanelHeight(),
                 BORDER
         );
 
         graphics.fill(
-                x + PANEL_WIDTH - 1,
+                x + getPanelWidth() - 1,
                 y,
-                x + PANEL_WIDTH,
-                y + PANEL_HEIGHT,
+                x + getPanelWidth(),
+                y + getPanelHeight(),
                 BORDER
         );
 
         graphics.fill(
                 x,
-                y + PANEL_HEIGHT - 1,
-                x + PANEL_WIDTH,
-                y + PANEL_HEIGHT,
+                y + getPanelHeight() - 1,
+                x + getPanelWidth(),
+                y + getPanelHeight(),
                 BORDER
         );
     }
@@ -317,7 +368,7 @@ public final class DungeonLootScreen extends Screen {
                 this.font,
                 pricing,
                 panelX
-                        + PANEL_WIDTH
+                        + getPanelWidth()
                         - 14
                         - this.font.width(
                                 pricing
@@ -382,7 +433,7 @@ public final class DungeonLootScreen extends Screen {
             int panelX
     ) {
         return panelX
-                + PANEL_WIDTH
+                + getPanelWidth()
                 - 14
                 - CLEAR_BUTTON_WIDTH;
     }
@@ -425,7 +476,7 @@ public final class DungeonLootScreen extends Screen {
 
             if (
                     currentX + width
-                            > panelX + PANEL_WIDTH - 110
+                            > panelX + getPanelWidth() - 110
             ) {
                 currentX =
                         startX;
@@ -505,11 +556,13 @@ public final class DungeonLootScreen extends Screen {
 
         int contentBottom =
                 panelY
-                        + PANEL_HEIGHT
+                        + getPanelHeight()
                         - CONTENT_BOTTOM_PADDING;
 
         int dividerX =
-                panelX + LEFT_PANEL_WIDTH;
+                getDividerX(
+                        panelX
+                );
 
         graphics.fill(
                 panelX + 8,
@@ -522,7 +575,7 @@ public final class DungeonLootScreen extends Screen {
         graphics.fill(
                 dividerX + 4,
                 contentTop,
-                panelX + PANEL_WIDTH - 8,
+                panelX + getPanelWidth() - 8,
                 contentBottom,
                 PANEL_BACKGROUND
         );
@@ -573,7 +626,7 @@ public final class DungeonLootScreen extends Screen {
 
         int listBottom =
                 panelY
-                        + PANEL_HEIGHT
+                        + getPanelHeight()
                         - CONTENT_BOTTOM_PADDING
                         - 6;
 
@@ -644,7 +697,7 @@ public final class DungeonLootScreen extends Screen {
                     mouseX >= panelX + 12
                             && mouseX
                             <= panelX
-                            + LEFT_PANEL_WIDTH
+                            + getLeftPanelWidth()
                             - 8
                             && mouseY >= rowY - 2
                             && mouseY
@@ -675,7 +728,7 @@ public final class DungeonLootScreen extends Screen {
                     this.font,
                     text,
                     panelX
-                            + LEFT_PANEL_WIDTH
+                            + getLeftPanelWidth()
                             - 14
                             - this.font.width(
                                     text
@@ -705,7 +758,7 @@ public final class DungeonLootScreen extends Screen {
                     panelX + 12,
                     y - 2,
                     panelX
-                            + LEFT_PANEL_WIDTH
+                            + getLeftPanelWidth()
                             - 8,
                     y + ROW_HEIGHT - 2,
                     HOVER_BACKGROUND
@@ -717,7 +770,7 @@ public final class DungeonLootScreen extends Screen {
                     panelX + 12,
                     y - 2,
                     panelX
-                            + LEFT_PANEL_WIDTH
+                            + getLeftPanelWidth()
                             - 8,
                     y + ROW_HEIGHT - 2,
                     ROW_BACKGROUND
@@ -770,10 +823,39 @@ public final class DungeonLootScreen extends Screen {
 
         x += 30;
 
+        int profitX =
+                panelX
+                        + getLeftPanelWidth()
+                        - 12
+                        - this.font.width(
+                                profit
+                        );
+
+        String kismet =
+                run.getKismetsUsed() > 0
+                        ? " K" + run.getKismetsUsed()
+                        : "";
+
+        int kismetWidth =
+                kismet.isEmpty()
+                        ? 0
+                        : this.font.width(
+                                kismet
+                        ) + 3;
+
+        int chestMaxWidth =
+                Math.max(
+                        40,
+                        profitX
+                                - x
+                                - kismetWidth
+                                - 8
+                );
+
         String shortenedChest =
                 shorten(
                         chest,
-                        145
+                        chestMaxWidth
                 );
 
         graphics.text(
@@ -787,11 +869,7 @@ public final class DungeonLootScreen extends Screen {
                 false
         );
 
-        if (run.getKismetsUsed() > 0) {
-
-            String kismet =
-                    " K"
-                            + run.getKismetsUsed();
+        if (!kismet.isEmpty()) {
 
             graphics.text(
                     this.font,
@@ -806,14 +884,6 @@ public final class DungeonLootScreen extends Screen {
                     true
             );
         }
-
-        int profitX =
-                panelX
-                        + LEFT_PANEL_WIDTH
-                        - 12
-                        - this.font.width(
-                                profit
-                        );
 
         graphics.text(
                 this.font,
@@ -838,7 +908,9 @@ public final class DungeonLootScreen extends Screen {
             int panelY
     ) {
         int dividerX =
-                panelX + LEFT_PANEL_WIDTH;
+                getDividerX(
+                        panelX
+                );
 
         int listTop =
                 panelY
@@ -847,7 +919,7 @@ public final class DungeonLootScreen extends Screen {
 
         int listBottom =
                 panelY
-                        + PANEL_HEIGHT
+                        + getPanelHeight()
                         - CONTENT_BOTTOM_PADDING
                         - 6;
 
@@ -922,7 +994,7 @@ public final class DungeonLootScreen extends Screen {
                     this.font,
                     text,
                     panelX
-                            + PANEL_WIDTH
+                            + getPanelWidth()
                             - 14
                             - this.font.width(
                                     text
@@ -948,27 +1020,32 @@ public final class DungeonLootScreen extends Screen {
                     dividerX + 8,
                     y - 2,
                     panelX
-                            + PANEL_WIDTH
+                            + getPanelWidth()
                             - 12,
                     y + ROW_HEIGHT - 2,
                     ROW_BACKGROUND
             );
         }
 
-        String name =
-                shorten(
-                        entry.displayName,
-                        175
+        ItemStack icon =
+                getPersistentLootIcon(
+                        entry
                 );
 
-        graphics.text(
-                this.font,
-                name,
-                dividerX + 12,
-                y,
-                WHITE,
-                false
-        );
+        int iconX =
+                dividerX + 12;
+
+        int iconY =
+                y - 4;
+
+        if (!icon.isEmpty()) {
+
+            graphics.item(
+                    icon,
+                    iconX,
+                    iconY
+            );
+        }
 
         String quantity =
                 "x"
@@ -976,11 +1053,37 @@ public final class DungeonLootScreen extends Screen {
 
         int quantityX =
                 panelX
-                        + PANEL_WIDTH
+                        + getPanelWidth()
                         - 100
                         - this.font.width(
                                 quantity
                         );
+
+        int nameX =
+                dividerX + 34;
+
+        int maxNameWidth =
+                Math.max(
+                        60,
+                        quantityX
+                                - nameX
+                                - 12
+                );
+
+        String name =
+                shorten(
+                        entry.displayName,
+                        maxNameWidth
+                );
+
+        graphics.text(
+                this.font,
+                name,
+                nameX,
+                y,
+                WHITE,
+                false
+        );
 
         graphics.text(
                 this.font,
@@ -998,7 +1101,7 @@ public final class DungeonLootScreen extends Screen {
 
         int valueX =
                 panelX
-                        + PANEL_WIDTH
+                        + getPanelWidth()
                         - 14
                         - this.font.width(
                                 value
@@ -1078,13 +1181,13 @@ public final class DungeonLootScreen extends Screen {
 
         int separatorY =
                 panelY
-                        + PANEL_HEIGHT
+                        + getPanelHeight()
                         - SUMMARY_HEIGHT;
 
         graphics.fill(
                 panelX + 10,
                 separatorY,
-                panelX + PANEL_WIDTH - 10,
+                panelX + getPanelWidth() - 10,
                 separatorY + 1,
                 BORDER
         );
@@ -1176,7 +1279,7 @@ public final class DungeonLootScreen extends Screen {
 
         int profitX =
                 panelX
-                        + PANEL_WIDTH
+                        + getPanelWidth()
                         - 14
                         - this.font.width(
                                 profitText
@@ -1206,16 +1309,10 @@ public final class DungeonLootScreen extends Screen {
         if (event.button() == 0) {
 
             int panelX =
-                    Math.max(
-                            10,
-                            (this.width - PANEL_WIDTH) / 2
-                    );
+                    getPanelX();
 
             int panelY =
-                    Math.max(
-                            10,
-                            (this.height - PANEL_HEIGHT) / 2
-                    );
+                    getPanelY();
 
             // -------------------------
             // CLEAR HISTORY
@@ -1315,7 +1412,7 @@ public final class DungeonLootScreen extends Screen {
                 mouseX < lastPanelX + 12
                         || mouseX
                         > lastPanelX
-                        + LEFT_PANEL_WIDTH
+                        + getLeftPanelWidth()
                         - 8
         ) {
             return null;
@@ -1387,7 +1484,7 @@ public final class DungeonLootScreen extends Screen {
 
             if (
                     currentX + width
-                            > panelX + PANEL_WIDTH - 110
+                            > panelX + getPanelWidth() - 110
             ) {
                 currentX =
                         startX;
@@ -1424,13 +1521,12 @@ public final class DungeonLootScreen extends Screen {
             double verticalAmount
     ) {
         int panelX =
-                Math.max(
-                        10,
-                        (this.width - PANEL_WIDTH) / 2
-                );
+                getPanelX();
 
         int dividerX =
-                panelX + LEFT_PANEL_WIDTH;
+                getDividerX(
+                        panelX
+                );
 
         int change;
 
@@ -1674,6 +1770,15 @@ public final class DungeonLootScreen extends Screen {
                                         )
                         );
 
+                if (
+                        (aggregate.iconData == null
+                                || aggregate.iconData.isBlank())
+                                && item.hasIconData()
+                ) {
+                    aggregate.iconData =
+                            item.getIconData();
+                }
+
                 aggregate.quantity +=
                         item.getQuantity();
 
@@ -1776,6 +1881,68 @@ public final class DungeonLootScreen extends Screen {
         }
 
         return result.toString();
+    }
+
+    // =========================
+    // PERSISTENT LOOT ICONS
+    // =========================
+
+    private ItemStack getPersistentLootIcon(
+            LootAggregate entry
+    ) {
+        if (entry == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack cached =
+                DungeonChestTracker.getLootIcon(
+                        entry.itemId
+                );
+
+        if (!cached.isEmpty()) {
+            return cached;
+        }
+
+        if (
+                entry.iconData == null
+                        || entry.iconData.isBlank()
+        ) {
+            return ItemStack.EMPTY;
+        }
+
+        try {
+            CompoundTag tag =
+                    TagParser.parseCompoundFully(
+                            entry.iconData
+                    );
+
+            var decoded =
+                    ItemStack.CODEC.decode(
+                            NbtOps.INSTANCE,
+                            tag
+                    ).result();
+
+            if (decoded.isEmpty()) {
+                return ItemStack.EMPTY;
+            }
+
+            ItemStack stack =
+                    decoded.get()
+                            .getFirst();
+
+            stack.setCount(1);
+
+            return stack;
+
+        } catch (Exception exception) {
+
+            System.err.println(
+                    "[ObbyAddons] Failed to load saved dungeon loot icon for "
+                            + entry.itemId
+            );
+
+            return ItemStack.EMPTY;
+        }
     }
 
     // =========================
@@ -1915,6 +2082,9 @@ public final class DungeonLootScreen extends Screen {
 
         private final String itemId;
         private final String displayName;
+
+        private String iconData =
+                "";
 
         private int quantity =
                 0;

@@ -9,15 +9,22 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.storage.TagValueOutput;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class DungeonChestTracker {
+
+    private static final Map<String, ItemStack> LOOT_ICON_CACHE =
+            new ConcurrentHashMap<>();
 
     private static final Pattern COIN_PATTERN =
             Pattern.compile(
@@ -201,12 +208,23 @@ public final class DungeonChestTracker {
                                     itemId
                             );
 
+            cacheLootIcon(
+                    itemId,
+                    stack
+            );
+
+            String iconData =
+                    serializeLootIcon(
+                            stack
+                    );
+
             lootItems.add(
                     new DungeonLootItem(
                             itemId,
                             displayName,
                             quantity,
-                            price
+                            price,
+                            iconData
                     )
             );
         }
@@ -231,6 +249,107 @@ public final class DungeonChestTracker {
                 lootItems
         );
     }
+
+    // =========================
+    // LOOT ICON CACHE
+    // =========================
+
+    public static ItemStack getLootIcon(
+            String itemId
+    ) {
+        if (
+                itemId == null
+                        || itemId.isBlank()
+        ) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack stack =
+                LOOT_ICON_CACHE.get(
+                        itemId
+                );
+
+        if (stack == null) {
+            return ItemStack.EMPTY;
+        }
+
+        return stack.copy();
+    }
+
+    private static void cacheLootIcon(
+            String itemId,
+            ItemStack stack
+    ) {
+        if (
+                itemId == null
+                        || itemId.isBlank()
+                        || stack == null
+                        || stack.isEmpty()
+        ) {
+            return;
+        }
+
+        ItemStack icon =
+                stack.copy();
+
+        icon.setCount(1);
+
+        LOOT_ICON_CACHE.put(
+                itemId,
+                icon
+        );
+    }
+
+    private static String serializeLootIcon(
+            ItemStack stack
+    ) {
+        if (
+                stack == null
+                        || stack.isEmpty()
+        ) {
+            return "";
+        }
+
+        Minecraft minecraft =
+                Minecraft.getInstance();
+
+        if (minecraft.level == null) {
+            return "";
+        }
+
+        try {
+            ItemStack icon =
+                    stack.copy();
+
+            icon.setCount(1);
+
+            TagValueOutput output =
+                    TagValueOutput.createWithContext(
+                            ProblemReporter.DISCARDING,
+                            minecraft.level.registryAccess()
+                    );
+
+            output.store(
+                    ItemStack.MAP_CODEC,
+                    icon
+            );
+
+            return output
+                    .buildResult()
+                    .toString();
+
+        } catch (Exception exception) {
+
+            System.err.println(
+                    "[ObbyAddons] Failed to serialize dungeon loot icon."
+            );
+
+            exception.printStackTrace();
+
+            return "";
+        }
+    }
+
 
     // =========================
     // ITEM ID
