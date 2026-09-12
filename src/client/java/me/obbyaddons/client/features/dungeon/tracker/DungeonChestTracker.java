@@ -352,7 +352,14 @@ public final class DungeonChestTracker {
             return "";
         }
 
-        return normalized;
+        return switch (normalized) {
+            case "APEX_DRAGON_SHARD" -> "SHARD_APEX";
+            case "POWER_DRAGON_SHARD" -> "SHARD_POWER";
+            case "BONZO_SHARD" -> "SHARD_BONZO";
+            case "SCARF_SHARD" -> "SHARD_SCARF";
+            case "THORN_SHARD" -> "SHARD_THORN";
+            default -> normalized;
+        };
     }
 
     // =========================
