@@ -8,13 +8,16 @@ public final class ChatRules {
 
     private static boolean dungeonSpamEnabled;
     private static boolean m7BossSpamEnabled;
-    private static boolean obtainedItemSpamEnabled;
 
     private static final ChatMessageList DUNGEON_SPAM =
-            ChatMessageList.load("/obbyaddons/chat/dungeon_spam.txt");
+            ChatMessageList.load(
+                    "/obbyaddons/chat/dungeon_spam.txt"
+            );
 
     private static final ChatMessageList M7_BOSS_SPAM =
-            ChatMessageList.load("/obbyaddons/chat/m7_boss_spam.txt");
+            ChatMessageList.load(
+                    "/obbyaddons/chat/m7_boss_spam.txt"
+            );
 
     private static final Pattern OBTAINED_ITEM_PATTERN =
             Pattern.compile(
@@ -30,9 +33,6 @@ public final class ChatRules {
 
         m7BossSpamEnabled =
                 ObbyConfig.get().m7BossSpamEnabled;
-
-        obtainedItemSpamEnabled =
-                ObbyConfig.get().obtainedItemSpamEnabled;
     }
 
     public static boolean isDungeonSpamEnabled() {
@@ -67,22 +67,6 @@ public final class ChatRules {
         ObbyConfig.save();
     }
 
-    public static boolean isObtainedItemSpamEnabled() {
-        return obtainedItemSpamEnabled;
-    }
-
-    public static void setObtainedItemSpamEnabled(
-            boolean enabled
-    ) {
-        obtainedItemSpamEnabled =
-                enabled;
-
-        ObbyConfig.get().obtainedItemSpamEnabled =
-                enabled;
-
-        ObbyConfig.save();
-    }
-
     public static boolean shouldHide(
             String message
     ) {
@@ -95,9 +79,16 @@ public final class ChatRules {
 
         if (
                 dungeonSpamEnabled
-                        && DUNGEON_SPAM.matches(
+                        && (
+                        DUNGEON_SPAM.matches(
                                 message
                         )
+                                || OBTAINED_ITEM_PATTERN
+                                .matcher(
+                                        message
+                                )
+                                .matches()
+                )
         ) {
             return true;
         }
@@ -105,19 +96,8 @@ public final class ChatRules {
         if (
                 m7BossSpamEnabled
                         && M7_BOSS_SPAM.matches(
-                                message
-                        )
-        ) {
-            return true;
-        }
-
-        if (
-                obtainedItemSpamEnabled
-                        && OBTAINED_ITEM_PATTERN
-                        .matcher(
-                                message
-                        )
-                        .matches()
+                        message
+                )
         ) {
             return true;
         }
