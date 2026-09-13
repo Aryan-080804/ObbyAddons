@@ -21,6 +21,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class DungeonItemHighlight {
@@ -52,8 +53,11 @@ public final class DungeonItemHighlight {
     private static final int RED =
             0xFFFF5555;
 
-    private static final ConcurrentHashMap<ItemEntity, Integer> trackedItems =
-            new ConcurrentHashMap<>();
+    private static final Set<ItemEntity> trackedItems =
+            ConcurrentHashMap.newKeySet();
+
+    private static ClientLevel trackedLevel =
+            null;
 
     private DungeonItemHighlight() {
     }
@@ -66,10 +70,46 @@ public final class DungeonItemHighlight {
                     ClientLevel world =
                             minecraftClient.level;
 
+                    // Completely reset when there is no active world.
                     if (world == null) {
+
+                        clearTrackedItems();
+
+                        trackedLevel =
+                                null;
+
                         return;
                     }
 
+                    // Never carry ItemEntity references between worlds.
+                    if (trackedLevel != world) {
+
+                        clearTrackedItems();
+
+                        trackedLevel =
+                                world;
+                    }
+
+                    // If the feature is disabled, do not retain stale
+                    // highlighted entities.
+                    if (!DungeonItemHighlightSettings.enabled) {
+
+                        clearTrackedItems();
+
+                        return;
+                    }
+
+                    // Remove entities that are no longer valid or should
+                    // no longer be highlighted.
+                    trackedItems.removeIf(
+                            item ->
+                                    item == null
+                                            || item.isRemoved()
+                                            || item.level() != world
+                                            || !highlightItem(item)
+                    );
+
+                    // Discover currently loaded dungeon items.
                     world.entitiesForRendering()
                             .forEach(
                                     entity -> {
@@ -78,14 +118,14 @@ public final class DungeonItemHighlight {
                                             return;
                                         }
 
-                                        if (trackedItems.containsKey(item)) {
+                                        if (trackedItems.contains(item)) {
                                             return;
                                         }
 
                                         if (highlightItem(item)) {
-                                            trackedItems.put(
-                                                    item,
-                                                    0
+
+                                            trackedItems.add(
+                                                    item
                                             );
                                         }
                                     }
@@ -93,11 +133,34 @@ public final class DungeonItemHighlight {
                 }
         );
 
+        ClientEntityEvents.ENTITY_LOAD.register(
+                (entity, world) -> {
+
+                    if (!(entity instanceof ItemEntity item)) {
+                        return;
+                    }
+
+                    if (!DungeonItemHighlightSettings.enabled) {
+                        return;
+                    }
+
+                    if (highlightItem(item)) {
+
+                        trackedItems.add(
+                                item
+                        );
+                    }
+                }
+        );
+
         ClientEntityEvents.ENTITY_UNLOAD.register(
                 (entity, world) -> {
 
                     if (entity instanceof ItemEntity item) {
-                        trackedItems.remove(item);
+
+                        trackedItems.remove(
+                                item
+                        );
                     }
                 }
         );
@@ -113,13 +176,33 @@ public final class DungeonItemHighlight {
             return;
         }
 
+        Minecraft minecraft =
+                Minecraft.getInstance();
+
+        ClientLevel world =
+                minecraft.level;
+
+        if (world == null) {
+            return;
+        }
+
         double tickProgress =
-                Minecraft.getInstance()
+                minecraft
                         .getDeltaTracker()
-                        .getGameTimeDeltaPartialTick(false);
+                        .getGameTimeDeltaPartialTick(
+                                false
+                        );
 
         trackedItems.forEach(
-                (itemEntity, ignored) -> {
+                itemEntity -> {
+
+                    if (
+                            itemEntity == null
+                                    || itemEntity.isRemoved()
+                                    || itemEntity.level() != world
+                    ) {
+                        return;
+                    }
 
                     double x =
                             Mth.lerp(
@@ -148,19 +231,37 @@ public final class DungeonItemHighlight {
                             );
 
                     AABB box =
-                            dimensions.makeBoundingBox(
+                            dimensions
+                                    .makeBoundingBox(
                                             x,
                                             y,
                                             z
                                     )
-                                    .inflate(0.1)
-                                    .move(0, 0.05, 0);
+                                    .inflate(
+                                            0.1
+                                    )
+                                    .move(
+                                            0,
+                                            0.05,
+                                            0
+                                    );
+
+                    int color =
+                            getColor(
+                                    itemEntity
+                            );
+
+                    // >20 blocks intentionally stays invisible,
+                    // matching the existing behavior.
+                    if (color == 0) {
+                        return;
+                    }
 
                     DungeonItemHighlightRenderer.renderFilledBox(
                             poseStack,
                             consumer,
                             box,
-                            getColor(itemEntity)
+                            color
                     );
                 }
         );
@@ -169,6 +270,14 @@ public final class DungeonItemHighlight {
     public static boolean highlightItem(
             ItemEntity item
     ) {
+
+        if (item == null) {
+            return false;
+        }
+
+        if (item.isRemoved()) {
+            return false;
+        }
 
         if (!DungeonItemHighlightSettings.enabled) {
             return false;
@@ -193,12 +302,22 @@ public final class DungeonItemHighlight {
         String itemName =
                 itemText.getString();
 
-        return ITEMS.contains(itemName);
+        if (itemName == null) {
+            return false;
+        }
+
+        return ITEMS.contains(
+                itemName.trim()
+        );
     }
 
     public static int getColor(
             ItemEntity item
     ) {
+
+        if (item == null) {
+            return 0;
+        }
 
         LocalPlayer player =
                 Minecraft.getInstance()
@@ -237,6 +356,32 @@ public final class DungeonItemHighlight {
             return false;
         }
 
-        return trackedItems.containsKey(item);
+        if (!DungeonItemHighlightSettings.enabled) {
+            return false;
+        }
+
+        if (item.isRemoved()) {
+            return false;
+        }
+
+        ClientLevel world =
+                Minecraft.getInstance()
+                        .level;
+
+        if (
+                world == null
+                        || item.level() != world
+        ) {
+            return false;
+        }
+
+        return trackedItems.contains(
+                item
+        );
+    }
+
+    public static void clearTrackedItems() {
+
+        trackedItems.clear();
     }
 }
