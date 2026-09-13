@@ -4,7 +4,6 @@ import me.obbyaddons.client.features.dungeon.tracker.AthenPriceProvider;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonLootItem;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunHistory;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunRecord;
-
 import me.obbyaddons.client.features.dungeon.tracker.DungeonChestTracker;
 import net.minecraft.world.item.ItemStack;
 
@@ -1749,12 +1748,11 @@ public final class DungeonLootScreen extends Screen {
                 }
 
                 String itemId =
-                        item.getItemId();
+                        normalizeLootItemId(
+                                item.getItemId()
+                        );
 
-                if (
-                        itemId == null
-                                || itemId.isBlank()
-                ) {
+                if (itemId.isBlank()) {
                     continue;
                 }
 
@@ -1832,7 +1830,9 @@ public final class DungeonLootScreen extends Screen {
         }
 
         String itemId =
-                item.getItemId();
+                normalizeLootItemId(
+                        item.getItemId()
+                );
 
         if (
                 itemId == null
@@ -2004,6 +2004,47 @@ public final class DungeonLootScreen extends Screen {
                 && mouseX <= x + width
                 && mouseY >= y
                 && mouseY <= y + height;
+    }
+
+    // =========================
+    // LOOT ID NORMALIZATION
+    // =========================
+
+    private String normalizeLootItemId(
+            String itemId
+    ) {
+        if (
+                itemId == null
+                        || itemId.isBlank()
+        ) {
+            return "";
+        }
+
+        String normalized =
+                itemId.trim()
+                        .toUpperCase(
+                                Locale.ROOT
+                        );
+
+        return switch (normalized) {
+            case "APEX_DRAGON_SHARD" ->
+                    "SHARD_APEX_DRAGON";
+
+            case "POWER_DRAGON_SHARD" ->
+                    "SHARD_POWER_DRAGON";
+
+            case "BONZO_SHARD" ->
+                    "SHARD_BONZO";
+
+            case "SCARF_SHARD" ->
+                    "SHARD_SCARF";
+
+            case "THORN_SHARD" ->
+                    "SHARD_THORN";
+
+            default ->
+                    normalized;
+        };
     }
 
     // =========================

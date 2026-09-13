@@ -21,6 +21,12 @@ public final class DungeonRewardScreenTracker {
                     Pattern.CASE_INSENSITIVE
             );
 
+    private static final long CROESUS_SCAN_INTERVAL_MS =
+            300L;
+
+    private static long lastCroesusScanTime =
+            0L;
+
     private static boolean rewardScreenOpen =
             false;
 
@@ -40,7 +46,6 @@ public final class DungeonRewardScreenTracker {
     public static void onScreenRendered(
             Screen screen
     ) {
-
         if (screen == null) {
             return;
         }
@@ -82,6 +87,9 @@ public final class DungeonRewardScreenTracker {
                 lastScreenTitle =
                         "";
 
+                lastCroesusScanTime =
+                        0L;
+
                 seenKismetSignals.clear();
 
                 System.out.println(
@@ -110,7 +118,6 @@ public final class DungeonRewardScreenTracker {
                     title;
 
             seenKismetSignals.clear();
-
         }
 
         if (
@@ -125,30 +132,23 @@ public final class DungeonRewardScreenTracker {
 
         if (croesus) {
 
-            /*
-             * First:
-             *
-             * Map the Croesus slot/page to the correct
-             * historical DungeonRunRecord.
-             */
+            long now =
+                    System.currentTimeMillis();
+
+            if (
+                    now - lastCroesusScanTime
+                            < CROESUS_SCAN_INTERVAL_MS
+            ) {
+                return;
+            }
+
+            lastCroesusScanTime =
+                    now;
+
             DungeonCroesusTracker.scan(
                     containerScreen
             );
 
-            /*
-             * Second:
-             *
-             * Croesus can keep the title:
-             *
-             * (1/3) Croesus
-             *
-             * even while showing an individual run's
-             * reward chest.
-             *
-             * DungeonChestTracker now checks the actual
-             * container contents and returns null unless
-             * it really looks like a reward chest.
-             */
             scanForKismetSignals(
                     containerScreen
             );
@@ -184,7 +184,6 @@ public final class DungeonRewardScreenTracker {
             );
         }
     }
-
     // =========================
     // REWARD CHEST
     // =========================

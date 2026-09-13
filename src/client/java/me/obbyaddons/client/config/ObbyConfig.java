@@ -30,6 +30,7 @@ public final class ObbyConfig {
     public boolean chatCleanerEnabled = true;
     public boolean dungeonSpamEnabled = true;
     public boolean m7BossSpamEnabled = true;
+    public boolean obtainedItemSpamEnabled = true;
 
     // =========================
     // STORM TIMER
