@@ -105,6 +105,9 @@ public final class ObbyAddonsScreen extends Screen {
         Feature chatCleaner =
                 FeatureManager.getFeature("Chat Cleaner");
 
+        Feature pearlTrajectory =
+                FeatureManager.getFeature("Pearl Trajectory");
+
         Feature stormFeatures =
                 FeatureManager.getFeature("Storm Features");
 
@@ -127,6 +130,9 @@ public final class ObbyAddonsScreen extends Screen {
 
         boolean showChatCleaner =
                 matchesSearch(chatCleaner, search);
+        
+        boolean showPearlTrajectory =
+                matchesSearch(pearlTrajectory, search);
 
         boolean showStormFeatures =
                 matchesSearch(stormFeatures, search);
@@ -155,8 +161,10 @@ public final class ObbyAddonsScreen extends Screen {
                 mouseX,
                 mouseY,
                 chatCleaner,
+                pearlTrajectory,
                 terminatorOverlay,
                 showChatCleaner,
+                showPearlTrajectory,
                 showTerminatorOverlay
         );
 
@@ -246,12 +254,15 @@ public final class ObbyAddonsScreen extends Screen {
         int mouseX,
         int mouseY,
         Feature chatCleaner,
+        Feature pearlTrajectory,
         Feature terminatorOverlay,
         boolean showChatCleaner,
+        boolean showPearlTrajectory,
         boolean showTerminatorOverlay
     ) {
         int featureCount =
                 (showChatCleaner ? 1 : 0)
+                        + (showPearlTrajectory ? 1 : 0)
                         + (showTerminatorOverlay ? 1 : 0);
 
         int panelHeight =
@@ -274,6 +285,20 @@ public final class ObbyAddonsScreen extends Screen {
                 drawFeatureRow(
                         graphics,
                         chatCleaner,
+                        PANEL_X,
+                        rowY,
+                        mouseX,
+                        mouseY
+                );
+
+                rowY += ROW_HEIGHT;
+        }
+
+        if (showPearlTrajectory) {
+
+                drawFeatureRow(
+                        graphics,
+                        pearlTrajectory,
                         PANEL_X,
                         rowY,
                         mouseX,

@@ -134,6 +134,16 @@ public final class ObbyConfig {
 
     public boolean dungeonItemHighlightEnabled = false;
 
+    // =========================
+    // PEARL TRAJECTORY
+    // =========================
+
+    public boolean pearlTrajectoryEnabled =
+            false;
+
+    public int pearlTrajectoryColor =
+            0xFF7C3AED;
+
     private ObbyConfig() {
     }
 

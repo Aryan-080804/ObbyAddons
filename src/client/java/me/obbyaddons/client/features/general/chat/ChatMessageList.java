@@ -1,4 +1,4 @@
-package me.obbyaddons.client.features.chat;
+package me.obbyaddons.client.features.general.chat;
 
 import java.io.BufferedReader;
 import java.io.IOException;

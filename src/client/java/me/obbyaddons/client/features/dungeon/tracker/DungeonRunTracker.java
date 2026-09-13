@@ -69,6 +69,12 @@ public final class DungeonRunTracker {
     private static String currentFloor =
             "";
 
+    private static long lastCompletionTime =
+            0L;
+
+    private static final long COMPLETION_DEBOUNCE_MS =
+            3000L;
+
     /*
      * Only runs completed during the current Minecraft session.
      * Resets whenever Minecraft restarts.
@@ -250,6 +256,32 @@ public final class DungeonRunTracker {
 
         if (bossMatcher.find()) {
 
+            if (!active || currentFloor.isEmpty()) {
+
+                System.out.println(
+                        "[ObbyAddons] Ignored completion because no dungeon is active: "
+                                + raw
+                );
+
+                return;
+            }
+
+            long now =
+                    System.currentTimeMillis();
+
+            if (
+                    now - lastCompletionTime
+                            < COMPLETION_DEBOUNCE_MS
+            ) {
+
+                System.out.println(
+                        "[ObbyAddons] Ignored duplicate dungeon completion: "
+                                + raw
+                );
+
+                return;
+            }
+
             int minutes =
                     Integer.parseInt(
                             bossMatcher.group(1)
@@ -265,6 +297,9 @@ public final class DungeonRunTracker {
                             minutes * 60L
                                     + seconds
                     ) * 1000L;
+
+            lastCompletionTime =
+                    now;
 
             completeRun(
                     durationMs

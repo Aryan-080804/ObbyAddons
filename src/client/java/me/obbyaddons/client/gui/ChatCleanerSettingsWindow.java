@@ -1,6 +1,6 @@
 package me.obbyaddons.client.gui;
 
-import me.obbyaddons.client.features.chat.ChatRules;
+import me.obbyaddons.client.features.general.chat.ChatRules;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 

@@ -3,8 +3,8 @@ package me.obbyaddons.client;
 import me.obbyaddons.client.command.ObbyAddonsCommands;
 import me.obbyaddons.client.config.ObbyConfig;
 
-import me.obbyaddons.client.features.chat.ChatCleanerFeature;
-import me.obbyaddons.client.features.chat.ChatRules;
+import me.obbyaddons.client.features.general.chat.ChatCleanerFeature;
+import me.obbyaddons.client.features.general.chat.ChatRules;
 
 import me.obbyaddons.client.features.dungeon.explosivearrow.ExplosiveArrowDamageTracker;
 import me.obbyaddons.client.features.dungeon.explosivearrow.ExplosiveArrowFeature;
@@ -37,6 +37,9 @@ import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlight;
 import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlightFeature;
 import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlightRenderer;
 import me.obbyaddons.client.features.dungeon.itemhighlight.DungeonItemHighlightSettings;
+
+import me.obbyaddons.client.features.general.pearltrajectory.PearlTrajectoryFeature;
+import me.obbyaddons.client.features.general.pearltrajectory.PearlTrajectoryRenderer;
 
 import me.obbyaddons.client.util.ServerTickTracker;
 
@@ -220,6 +223,8 @@ public class ObbyAddonsClient implements ClientModInitializer {
         DungeonItemHighlight.init();
         DungeonItemHighlightRenderer.init();
 
+        PearlTrajectoryRenderer.init();
+
         /*
          * Run tracking stays active even if the HUD
          * is toggled off.
@@ -250,6 +255,10 @@ public class ObbyAddonsClient implements ClientModInitializer {
 
                     ChatCleanerFeature chatCleaner =
                             new ChatCleanerFeature();
+
+                    FeatureManager.register(
+                            new PearlTrajectoryFeature()
+                    );
 
                     FeatureManager.register(
                             chatCleaner
