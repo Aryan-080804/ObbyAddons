@@ -1,6 +1,6 @@
 package me.obbyaddons.client.gui;
 
-import me.obbyaddons.client.features.dungeon.tracker.AthenPriceProvider;
+import me.obbyaddons.client.features.dungeon.tracker.PriceProvider;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonLootItem;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunRecord;
 
@@ -393,7 +393,7 @@ public final class DungeonRunDetailScreen extends Screen {
             );
 
             long currentPrice =
-                    AthenPriceProvider
+                    PriceProvider
                             .getPriceCoins(
                                     item.getItemId()
                             );

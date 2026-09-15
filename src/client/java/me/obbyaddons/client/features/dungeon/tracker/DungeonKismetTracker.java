@@ -41,7 +41,7 @@ public final class DungeonKismetTracker {
         }
 
         long currentKismetPrice =
-                AthenPriceProvider.getPriceCoins(
+                PriceProvider.getPriceCoins(
                         KISMET_ITEM_ID
                 );
 

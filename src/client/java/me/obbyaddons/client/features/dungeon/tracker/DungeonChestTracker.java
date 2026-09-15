@@ -203,7 +203,7 @@ public final class DungeonChestTracker {
                     );
 
             long price =
-                    AthenPriceProvider
+                    PriceProvider
                             .getPriceCoins(
                                     itemId
                             );

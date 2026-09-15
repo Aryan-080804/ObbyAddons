@@ -1,6 +1,6 @@
 package me.obbyaddons.client.gui;
 
-import me.obbyaddons.client.features.dungeon.tracker.AthenPriceProvider;
+import me.obbyaddons.client.features.dungeon.tracker.PriceProvider;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonLootItem;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunHistory;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunRecord;
@@ -359,9 +359,9 @@ public final class DungeonLootScreen extends Screen {
         );
 
         String pricing =
-                AthenPriceProvider.getPriceCount() > 0
-                        ? "Live Athen Prices"
-                        : "Waiting for Athen...";
+                PriceProvider.getPriceCount() > 0
+                        ? "Live Prices"
+                        : "Waiting for API...";
 
         graphics.text(
                 this.font,
@@ -373,7 +373,7 @@ public final class DungeonLootScreen extends Screen {
                                 pricing
                         ),
                 panelY + 10,
-                AthenPriceProvider.getPriceCount() > 0
+                PriceProvider.getPriceCount() > 0
                         ? CYAN
                         : YELLOW,
                 false
@@ -1781,7 +1781,7 @@ public final class DungeonLootScreen extends Screen {
                         item.getQuantity();
 
                 long price =
-                        AthenPriceProvider
+                        PriceProvider
                                 .getPriceCoins(
                                         itemId
                                 );

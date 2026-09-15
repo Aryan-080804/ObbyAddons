@@ -73,9 +73,15 @@ public final class SkyblockItemUtils {
         }
 
         if (enchantments.contains(
-                "ultimate_fatal_tempo"
+                "ultimate_fatal_tempo"  
         )) {
             return "FT";
+        }
+
+        if (enchantments.contains(
+                "ultimate_rend"
+        )) {
+        return "R";
         }
 
         return "";

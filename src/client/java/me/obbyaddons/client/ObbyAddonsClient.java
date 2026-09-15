@@ -23,7 +23,7 @@ import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlayFeature
 import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlayRenderer;
 import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlaySettings;
 
-import me.obbyaddons.client.features.dungeon.tracker.AthenPriceProvider;
+import me.obbyaddons.client.features.dungeon.tracker.PriceProvider;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunHistory;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTracker;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunTrackerFeature;
@@ -244,7 +244,7 @@ public class ObbyAddonsClient implements ClientModInitializer {
          * It fetches immediately, then refreshes
          * automatically every 10 minutes.
          */
-        AthenPriceProvider.start();
+        PriceProvider.start();
 
         // =========================
         // FEATURES

@@ -32,7 +32,7 @@ public final class DungeonRunRecord {
      * Individual items from the opened chest.
      *
      * These IDs let us recalculate current value
-     * later using the latest Athen prices.
+     * later using the latest prices.
      */
     private List<DungeonLootItem> lootItems =
             new ArrayList<>();
@@ -236,14 +236,14 @@ public final class DungeonRunRecord {
     }
 
     // =========================
-    // CURRENT ATHEN VALUE
+    // CURRENT LIVE VALUE
     // =========================
 
     /*
      * Recalculates this run's loot using current
-     * Athen prices.
+     * Live prices.
      *
-     * If Athen does not currently have a price for
+     * If Live prices does not currently have a price for
      * an item, fall back to the price saved when the
      * chest was opened.
      */
@@ -265,7 +265,7 @@ public final class DungeonRunRecord {
             }
 
             long currentPrice =
-                    AthenPriceProvider.getPriceCoins(
+                    PriceProvider.getPriceCoins(
                             item.getItemId()
                     );
 

@@ -3,12 +3,17 @@ package me.obbyaddons.client.features.dungeon.tracker;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.Strictness;
+import com.google.gson.stream.JsonReader;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
@@ -16,12 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 
-public final class AthenPriceProvider {
+public final class PriceProvider {
 
     private static final URI PRICES_URI =
             URI.create(
-                    "https://athen.aerii.xyz/prices"
+                    "https://api.starred.foo/prices"
             );
 
     private static final Duration REQUEST_TIMEOUT =
@@ -43,7 +49,7 @@ public final class AthenPriceProvider {
                         Thread thread =
                                 new Thread(
                                         runnable,
-                                        "ObbyAddons-AthenPrices"
+                                        "ObbyAddons-StarredPrices"
                                 );
 
                         thread.setDaemon(true);
@@ -52,12 +58,6 @@ public final class AthenPriceProvider {
                     }
             );
 
-    /*
-     * Current live Athen prices.
-     *
-     * These maps are fully replaced after every
-     * successful refresh.
-     */
     private static volatile Map<String, Double> prices =
             Map.of();
 
@@ -70,12 +70,8 @@ public final class AthenPriceProvider {
     private static boolean started =
             false;
 
-    private AthenPriceProvider() {
+    private PriceProvider() {
     }
-
-    // =========================
-    // START / REFRESH
-    // =========================
 
     public static synchronized void start() {
 
@@ -85,18 +81,12 @@ public final class AthenPriceProvider {
 
         started = true;
 
-        /*
-         * Fetch immediately when Minecraft starts.
-         */
         EXECUTOR.execute(
-                AthenPriceProvider::refreshSafely
+                PriceProvider::refreshSafely
         );
 
-        /*
-         * Refresh every 10 minutes afterward.
-         */
         EXECUTOR.scheduleAtFixedRate(
-                AthenPriceProvider::refreshSafely,
+                PriceProvider::refreshSafely,
                 REFRESH_MINUTES,
                 REFRESH_MINUTES,
                 TimeUnit.MINUTES
@@ -106,7 +96,7 @@ public final class AthenPriceProvider {
     public static void refreshNow() {
 
         EXECUTOR.execute(
-                AthenPriceProvider::refreshSafely
+                PriceProvider::refreshSafely
         );
     }
 
@@ -119,7 +109,7 @@ public final class AthenPriceProvider {
         } catch (Exception exception) {
 
             System.out.println(
-                    "[ObbyAddons] Failed to refresh Athen prices. "
+                    "[ObbyAddons] Failed to refresh Starred prices. "
                             + "Keeping previous prices."
             );
 
@@ -140,30 +130,102 @@ public final class AthenPriceProvider {
                         .GET()
                         .build();
 
-        HttpResponse<String> response =
+        HttpResponse<byte[]> response =
                 HTTP_CLIENT.send(
                         request,
-                        HttpResponse.BodyHandlers.ofString()
+                        HttpResponse.BodyHandlers.ofByteArray()
                 );
 
         int status =
                 response.statusCode();
+
+        System.out.println(
+                "[ObbyAddons] Starred status: "
+                        + status
+        );
+
+        System.out.println(
+                "[ObbyAddons] Starred content type: "
+                        + response.headers()
+                        .firstValue("Content-Type")
+                        .orElse("unknown")
+        );
+
+        System.out.println(
+                "[ObbyAddons] Starred content encoding: "
+                        + response.headers()
+                        .firstValue("Content-Encoding")
+                        .orElse("none")
+        );
 
         if (
                 status < 200
                         || status >= 300
         ) {
             throw new IOException(
-                    "Unexpected Athen response status: "
+                    "Unexpected Starred response status: "
                             + status
             );
         }
 
-        JsonObject root =
-                JsonParser.parseString(
-                                response.body()
+        String contentEncoding =
+                response.headers()
+                        .firstValue("Content-Encoding")
+                        .orElse("");
+
+        String responseBody;
+
+        if ("gzip".equalsIgnoreCase(contentEncoding)) {
+
+            try (
+                    GZIPInputStream gzipInputStream =
+                            new GZIPInputStream(
+                                    new ByteArrayInputStream(
+                                            response.body()
+                                    )
+                            )
+            ) {
+
+                responseBody =
+                        new String(
+                                gzipInputStream.readAllBytes(),
+                                StandardCharsets.UTF_8
+                        );
+            }
+
+        } else {
+
+            responseBody =
+                    new String(
+                            response.body(),
+                            StandardCharsets.UTF_8
+                    );
+        }
+
+        JsonReader reader =
+                new JsonReader(
+                        new StringReader(
+                                responseBody
                         )
-                        .getAsJsonObject();
+                );
+
+        reader.setStrictness(
+                Strictness.LENIENT
+        );
+
+        JsonElement parsed =
+                JsonParser.parseReader(
+                        reader
+                );
+
+        if (!parsed.isJsonObject()) {
+            throw new IOException(
+                    "Starred returned invalid JSON."
+            );
+        }
+
+        JsonObject root =
+                parsed.getAsJsonObject();
 
         Map<String, Double> nextPrices =
                 new ConcurrentHashMap<>();
@@ -171,30 +233,67 @@ public final class AthenPriceProvider {
         Map<String, String> nextSources =
                 new ConcurrentHashMap<>();
 
-        loadAuctionHouse(
-                root.getAsJsonObject(
-                        "auction_house"
-                ),
-                nextPrices,
-                nextSources
-        );
+        JsonObject auctionHouse =
+                root.has("auction_house")
+                        && root.get("auction_house").isJsonObject()
+                        ? root.getAsJsonObject("auction_house")
+                        : null;
 
-        loadBazaar(
-                root.getAsJsonObject(
-                        "bazaar"
-                ),
-                nextPrices,
-                nextSources
-        );
+        JsonObject bazaar =
+                root.has("bazaar")
+                        && root.get("bazaar").isJsonObject()
+                        ? root.getAsJsonObject("bazaar")
+                        : null;
 
-        /*
-         * Never wipe a working cache because Athen
-         * returned an empty or malformed response.
-         */
+        int rawAuctionHouseCount =
+                auctionHouse == null
+                        ? 0
+                        : auctionHouse.size();
+
+        int rawBazaarCount =
+                bazaar == null
+                        ? 0
+                        : bazaar.size();
+
+        int auctionHouseCount = 0;
+        int bazaarCount = 0;
+
+        if (auctionHouse != null) {
+
+            int beforeAuctionHouse =
+                    nextPrices.size();
+
+            loadAuctionHouse(
+                    auctionHouse,
+                    nextPrices,
+                    nextSources
+            );
+
+            auctionHouseCount =
+                    nextPrices.size()
+                            - beforeAuctionHouse;
+        }
+
+        if (bazaar != null) {
+
+            int beforeBazaar =
+                    nextPrices.size();
+
+            loadBazaar(
+                    bazaar,
+                    nextPrices,
+                    nextSources
+            );
+
+            bazaarCount =
+                    nextPrices.size()
+                            - beforeBazaar;
+        }
+
         if (nextPrices.isEmpty()) {
 
             throw new IOException(
-                    "Athen returned zero usable prices."
+                    "Starred returned zero usable prices."
             );
         }
 
@@ -212,15 +311,27 @@ public final class AthenPriceProvider {
                 System.currentTimeMillis();
 
         System.out.println(
+                "[ObbyAddons] Starred auction house: "
+                        + auctionHouseCount
+                        + "/"
+                        + rawAuctionHouseCount
+                        + " usable."
+        );
+
+        System.out.println(
+                "[ObbyAddons] Starred bazaar: "
+                        + bazaarCount
+                        + "/"
+                        + rawBazaarCount
+                        + " usable."
+        );
+
+        System.out.println(
                 "[ObbyAddons] Loaded "
                         + prices.size()
-                        + " Athen prices."
+                        + " unique Starred prices."
         );
     }
-
-    // =========================
-    // AUCTION HOUSE
-    // =========================
 
     private static void loadAuctionHouse(
             JsonObject section,
@@ -277,21 +388,27 @@ public final class AthenPriceProvider {
                 continue;
             }
 
+            String itemId =
+                    entry.getKey();
+
+            if (
+                    itemId == null
+                            || itemId.isBlank()
+            ) {
+                continue;
+            }
+
             nextPrices.put(
-                    entry.getKey(),
+                    itemId,
                     price
             );
 
             nextSources.put(
-                    entry.getKey(),
+                    itemId,
                     "auction_house"
             );
         }
     }
-
-    // =========================
-    // BAZAAR
-    // =========================
 
     private static void loadBazaar(
             JsonObject section,
@@ -355,42 +472,40 @@ public final class AthenPriceProvider {
                 continue;
             }
 
+            String itemId =
+                    entry.getKey();
+
+            if (
+                    itemId == null
+                            || itemId.isBlank()
+            ) {
+                continue;
+            }
+
             /*
-             * Keep the auction price if the same item
-             * already exists in the auction-house data.
+             * Preserve an auction-house price if the same
+             * item is present in both sections.
              */
             if (
                     nextPrices.containsKey(
-                            entry.getKey()
+                            itemId
                     )
             ) {
                 continue;
             }
 
             nextPrices.put(
-                    entry.getKey(),
+                    itemId,
                     price
             );
 
             nextSources.put(
-                    entry.getKey(),
+                    itemId,
                     "bazaar"
             );
         }
     }
 
-    // =========================
-    // ITEM ID RESOLUTION
-    // =========================
-
-    /*
-     * Some Hypixel item IDs do not match the IDs
-     * exposed by Athen.
-     *
-     * Resolve those aliases in one place so new
-     * loot and previously saved run history both
-     * use the correct live price.
-     */
     private static String resolvePriceId(
             String itemId
     ) {
@@ -426,13 +541,9 @@ public final class AthenPriceProvider {
                     "SHARD_THORN";
 
             default ->
-                    itemId;
+                    normalized;
         };
     }
-
-    // =========================
-    // PRICE LOOKUP
-    // =========================
 
     public static long getPriceCoins(
             String itemId
@@ -526,10 +637,6 @@ public final class AthenPriceProvider {
 
         return lastSuccessfulRefresh;
     }
-
-    // =========================
-    // JSON HELPERS
-    // =========================
 
     private static Double positiveNumber(
             JsonObject object,
