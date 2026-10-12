@@ -86,4 +86,15 @@ public final class SkyblockItemUtils {
 
         return "";
     }
+
+    public static String getM7ArchBowOverlay(ItemStack stack) {
+
+        String id = getSkyblockId(stack);
+
+        return switch (id) {
+                case "EXPLOSIVE_BOW" -> "E";
+                case "DEATH_BOW" -> "DB";
+                default -> "";
+        };
+    }
 }

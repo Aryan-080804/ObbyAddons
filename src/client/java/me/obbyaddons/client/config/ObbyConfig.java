@@ -100,6 +100,12 @@ public final class ObbyConfig {
     public int terminatorOverlayColor = 0xFFFFFFFF;
 
     // =========================
+    // M7 ARCH BOWS
+    // =========================
+
+    public boolean m7ArchBowsEnabled = true;
+
+    // =========================
     // CLICK PROT DISPLAY
     // =========================
 

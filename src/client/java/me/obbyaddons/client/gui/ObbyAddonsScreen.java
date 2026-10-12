@@ -126,6 +126,9 @@ public final class ObbyAddonsScreen extends Screen {
         Feature dungeonItemHighlight =
                 FeatureManager.getFeature("Item Highlight");
 
+        Feature m7ArchBows =
+                FeatureManager.getFeature("M7 Arch Bows");
+
         String search = getSearchText();
 
         boolean showChatCleaner =
@@ -156,6 +159,9 @@ public final class ObbyAddonsScreen extends Screen {
         boolean showDungeonItemHighlight =
                 matchesSearch(dungeonItemHighlight, search);
 
+        boolean showM7ArchBows =
+                matchesSearch(m7ArchBows, search);
+
         drawGeneralPanel(
                 graphics,
                 mouseX,
@@ -177,11 +183,13 @@ public final class ObbyAddonsScreen extends Screen {
                 terminalClickTimer,
                 dungeonRunTracker,
                 dungeonItemHighlight,
+                m7ArchBows,
                 showStormFeatures,
                 showExplosiveArrow,
                 showTerminalClickTimer,
                 showDungeonRunTracker,
-                showDungeonItemHighlight
+                showDungeonItemHighlight,
+                showM7ArchBows
         );
 
         drawSettingsWindows(
@@ -329,11 +337,13 @@ public final class ObbyAddonsScreen extends Screen {
             Feature terminalClickTimer,
             Feature dungeonRunTracker,
             Feature dungeonItemHighlight,
+            Feature m7ArchBows,
             boolean showStormFeatures,
             boolean showExplosiveArrow,
             boolean showTerminalClickTimer,
             boolean showDungeonRunTracker,
-            boolean showDungeonItemHighlight
+            boolean showDungeonItemHighlight,
+            boolean showM7ArchBows
     ) {
         int featureCount = 0;
 
@@ -355,6 +365,10 @@ public final class ObbyAddonsScreen extends Screen {
         }
 
         if (showDungeonItemHighlight) {
+                featureCount++;
+        }
+
+        if (showM7ArchBows) {
                 featureCount++;
         }
 
@@ -441,6 +455,19 @@ public final class ObbyAddonsScreen extends Screen {
 
             rowY += ROW_HEIGHT;
         }
+
+        if (showM7ArchBows) {
+            drawFeatureRow(
+                graphics,
+                m7ArchBows,
+                DUNGEON_X,
+                rowY,
+                mouseX,
+                mouseY
+            );
+        }
+
+        rowY += ROW_HEIGHT;
     }
 
     private void drawPanelBase(

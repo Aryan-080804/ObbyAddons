@@ -10,7 +10,7 @@ import java.util.Locale;
 public final class StormLastBreathTimer {
 
     // 34.00 seconds after Storm begins.
-    private static final int BASE_TARGET_TICK = 34 * 20;
+    private static final int BASE_TARGET_TICK = 32 * 20;
 
     // Show countdown for 3 seconds.
     private static final int COUNTDOWN_TICKS = 5 * 20;

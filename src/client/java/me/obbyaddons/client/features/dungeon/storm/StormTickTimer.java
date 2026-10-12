@@ -31,7 +31,7 @@ public final class StormTickTimer {
 
     private static final long DEATH_DISPLAY_DURATION = 2000;
 
-    private static final int CRUSH_TICKS = 31 * 20;
+    private static final int CRUSH_TICKS = 29 * 20;
     private static final int COUNTDOWN_TICKS = 5 * 20;
 
     private StormTickTimer() {

@@ -22,6 +22,7 @@ import me.obbyaddons.client.features.dungeon.clickprot.TerminalClickTimerSetting
 import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlayFeature;
 import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlayRenderer;
 import me.obbyaddons.client.features.dungeon.terminator.TerminatorOverlaySettings;
+import me.obbyaddons.client.features.dungeon.archbows.M7ArchBowsFeature;
 
 import me.obbyaddons.client.features.dungeon.tracker.PriceProvider;
 import me.obbyaddons.client.features.dungeon.tracker.DungeonRunHistory;
@@ -274,6 +275,10 @@ public class ObbyAddonsClient implements ClientModInitializer {
 
                     FeatureManager.register(
                             new TerminatorOverlayFeature()
+                    );
+
+                    FeatureManager.register(
+                            new M7ArchBowsFeature()
                     );
 
                     FeatureManager.register(

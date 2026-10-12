@@ -200,6 +200,7 @@ public final class DungeonItemHighlight {
                             itemEntity == null
                                     || itemEntity.isRemoved()
                                     || itemEntity.level() != world
+                                    || !highlightItem(itemEntity)
                     ) {
                         return;
                     }
@@ -341,44 +342,32 @@ public final class DungeonItemHighlight {
             return RED;
         }
 
-        if (item.tickCount > 11) {
+        if (item.tickCount > 5) {
             return GREEN;
         }
 
         return GOLD;
     }
 
-    public static boolean hideItem(
-            ItemEntity item
-    ) {
-
-        if (item == null) {
-            return false;
-        }
+    public static boolean hideItem(ItemEntity item) {
+        if (item == null || item.isRemoved()) {
+                return false;
+                }
 
         if (!DungeonItemHighlightSettings.enabled) {
-            return false;
-        }
+                return false;
+                }
 
-        if (item.isRemoved()) {
-            return false;
-        }
+        ClientLevel world = Minecraft.getInstance().level;
 
-        ClientLevel world =
-                Minecraft.getInstance()
-                        .level;
+        if (world == null || item.level() != world) {
+                return false;
+                }
 
-        if (
-                world == null
-                        || item.level() != world
-        ) {
-            return false;
-        }
-
-        return trackedItems.contains(
-                item
-        );
-    }
+        return trackedItems.contains(item)
+                && highlightItem(item)
+                && getColor(item) != 0;
+                }
 
     public static void clearTrackedItems() {
 

@@ -3,10 +3,19 @@ package me.obbyaddons.client.features.dungeon.shared;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.multiplayer.ClientLevel;
+import java.util.regex.Pattern;
 
 public final class DungeonBossTracker {
 
     private static boolean inBoss = false;
+    private static ClientLevel trackedWorld = null;
+
+    private static final Pattern DUNGEON_ENTRY =
+            Pattern.compile(
+                    "entered\\s+(?:MM\\s+)?The Catacombs,\\s*Floor\\s+[IVX]+!",
+                    Pattern.CASE_INSENSITIVE
+            );
 
     private DungeonBossTracker() {
     }
@@ -19,6 +28,11 @@ public final class DungeonBossTracker {
 
         ClientTickEvents.END_CLIENT_TICK.register(
                 client -> {
+                    if (client.level != trackedWorld) {
+                        trackedWorld = client.level;
+                        inBoss = false;
+                    }
+
                     if (!DungeonLocationTracker.inDungeon()) {
                         inBoss = false;
                     }
@@ -39,6 +53,11 @@ public final class DungeonBossTracker {
         String text =
                 message.getString()
                         .trim();
+
+        if (DUNGEON_ENTRY.matcher(text).find()) {
+            inBoss = false;
+            return;
+        }
 
         if (text.isEmpty()) {
             return;

@@ -1,3 +1,4 @@
+
 package me.obbyaddons.client.features.dungeon.terminator;
 
 import me.obbyaddons.client.config.ObbyConfig;
@@ -20,17 +21,36 @@ public final class TerminatorOverlayRenderer {
             int y
     ) {
 
-        if (!ObbyConfig.get().terminatorOverlayEnabled) {
-            return;
+        String overlay = "";
+
+        // =========================
+        // TERMINATOR ULT ENCHANT
+        // =========================
+
+        if (ObbyConfig.get().terminatorOverlayEnabled) {
+
+            overlay = SkyblockItemUtils
+                    .getTerminatorEnchantOverlay(stack);
         }
 
-        String overlay =
-                SkyblockItemUtils
-                        .getTerminatorEnchantOverlay(stack);
+        // =========================
+        // M7 ARCH BOWS
+        // =========================
+
+        if (overlay.isEmpty()
+                && ObbyConfig.get().m7ArchBowsEnabled) {
+
+            overlay = SkyblockItemUtils
+                    .getM7ArchBowOverlay(stack);
+        }
 
         if (overlay.isEmpty()) {
             return;
         }
+
+        // =========================
+        // RENDER OVERLAY
+        // =========================
 
         Minecraft minecraft =
                 Minecraft.getInstance();
