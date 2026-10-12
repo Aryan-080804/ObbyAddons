@@ -1338,7 +1338,7 @@ public final class DungeonLootScreen extends Screen {
                     )
             ) {
                 Minecraft.getInstance()
-                        .setScreen(
+                        .setScreenAndShow(
                                 new DungeonLootClearConfirmScreen(
                                         this
                                 )
@@ -1386,7 +1386,7 @@ public final class DungeonLootScreen extends Screen {
             if (clickedRun != null) {
 
                 Minecraft.getInstance()
-                        .setScreen(
+                        .setScreenAndShow(
                                 new DungeonRunDetailScreen(
                                         this,
                                         clickedRun

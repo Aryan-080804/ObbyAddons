@@ -48,7 +48,7 @@ public final class StormTickTimer {
                     Minecraft minecraft = Minecraft.getInstance();
 
                     if (minecraft.gui != null) {
-                        minecraft.gui.getChat().addClientSystemMessage(
+                        minecraft.gui.hud.getChat().addClientSystemMessage(
                                 Component.literal(
                                         "§c⚠ Spirit Mask used during Storm! ⚠"
                                 )
@@ -84,7 +84,7 @@ public final class StormTickTimer {
                     Minecraft minecraft = Minecraft.getInstance();
 
                     if (minecraft.gui != null) {
-                        minecraft.gui.getChat().addClientSystemMessage(
+                        minecraft.gui.hud.getChat().addClientSystemMessage(
                                 Component.literal(
                                         "§aStorm died at: §e"
                                                 + String.format(

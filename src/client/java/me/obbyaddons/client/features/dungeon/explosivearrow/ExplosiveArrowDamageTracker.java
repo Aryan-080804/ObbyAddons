@@ -134,6 +134,7 @@ public final class ExplosiveArrowDamageTracker {
                                     .format(damagePerEnemy);
 
                     minecraft.gui
+                            .hud
                             .getChat()
                             .addClientSystemMessage(
                                     Component.literal(

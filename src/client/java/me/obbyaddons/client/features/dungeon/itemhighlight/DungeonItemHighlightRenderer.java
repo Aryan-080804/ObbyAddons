@@ -6,12 +6,12 @@ import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
@@ -36,9 +36,12 @@ public final class DungeonItemHighlightRenderer {
                                             "item-highlight-filled-no-depth"
                                     )
                             )
-                            .withVertexFormat(
-                                    DefaultVertexFormat.POSITION_COLOR,
-                                    VertexFormat.Mode.QUADS
+                            .withVertexBinding(
+                                    0,
+                                    DefaultVertexFormat.POSITION_COLOR_NORMAL
+                            )
+                            .withPrimitiveTopology(
+                                    PrimitiveTopology.QUADS
                             )
                             .withDepthStencilState(
                                     new DepthStencilState(
@@ -62,7 +65,7 @@ public final class DungeonItemHighlightRenderer {
     }
 
     public static void init() {
-        LevelRenderEvents.AFTER_TRANSLUCENT_FEATURES.register(
+        LevelRenderEvents.COLLECT_SUBMITS.register(
                 DungeonItemHighlightRenderer::render
         );
     }
@@ -87,12 +90,6 @@ public final class DungeonItemHighlightRenderer {
             return;
         }
 
-        MultiBufferSource bufferSource =
-                context.bufferSource();
-
-        if (bufferSource == null) {
-            return;
-        }
 
         Vec3 camera =
                 levelState.cameraRenderState.pos;
@@ -105,16 +102,22 @@ public final class DungeonItemHighlightRenderer {
                 -camera.z
         );
 
-        VertexConsumer consumer =
-                bufferSource.getBuffer(
-                        FILLED_NO_DEPTH
-                );
+        SubmitNodeCollector collector =
+                context.submitNodeCollector();
 
-        DungeonItemHighlight.render(
-                context,
+        if (collector != null) {
+        collector.submitCustomGeometry(
                 poseStack,
-                consumer
+                FILLED_NO_DEPTH,
+                (pose, consumer) -> {
+                        DungeonItemHighlight.render(
+                                context,
+                                poseStack,
+                                consumer
+                        );
+                }
         );
+        }
 
         poseStack.popPose();
     }

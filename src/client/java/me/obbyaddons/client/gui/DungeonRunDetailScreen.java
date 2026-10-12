@@ -465,7 +465,7 @@ public final class DungeonRunDetailScreen extends Screen {
     public void onClose() {
 
         Minecraft.getInstance()
-                .setScreen(
+                .setScreenAndShow(
                         parent
                 );
     }

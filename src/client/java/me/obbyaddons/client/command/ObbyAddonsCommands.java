@@ -106,7 +106,7 @@ public final class ObbyAddonsCommands {
 
         minecraft.execute(
                 () ->
-                        minecraft.setScreen(
+                        minecraft.setScreenAndShow(
                                 new ObbyAddonsScreen()
                         )
         );
@@ -125,7 +125,7 @@ public final class ObbyAddonsCommands {
 
         minecraft.execute(
                 () ->
-                        minecraft.setScreen(
+                        minecraft.setScreenAndShow(
                                 new HudEditorScreen()
                         )
         );
@@ -146,7 +146,7 @@ public final class ObbyAddonsCommands {
 
         minecraft.execute(
                 () ->
-                        minecraft.setScreen(
+                        minecraft.setScreenAndShow(
                                 new DungeonLootScreen()
                         )
         );
@@ -166,6 +166,7 @@ public final class ObbyAddonsCommands {
         minecraft.execute(
                 () ->
                         minecraft.gui
+                                .hud
                                 .getChat()
                                 .addClientSystemMessage(
                                         Component.literal(
@@ -203,6 +204,7 @@ public final class ObbyAddonsCommands {
             minecraft.execute(
                     () ->
                             minecraft.gui
+                                    .hud
                                     .getChat()
                                     .addClientSystemMessage(
                                             Component.literal(
@@ -221,6 +223,7 @@ public final class ObbyAddonsCommands {
             minecraft.execute(
                     () ->
                             minecraft.gui
+                                    .hud
                                     .getChat()
                                     .addClientSystemMessage(
                                             Component.literal(

@@ -14,6 +14,7 @@ public final class ChatCleanerFeature extends Feature {
     public void initialize() {
         Minecraft.getInstance()
                 .gui
+                .hud
                 .getChat()
                 .setVisibleMessageFilter(this::shouldShowMessage);
 

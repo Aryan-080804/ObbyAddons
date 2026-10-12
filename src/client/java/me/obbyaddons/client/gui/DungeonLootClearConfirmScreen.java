@@ -230,7 +230,7 @@ public final class DungeonLootClearConfirmScreen extends Screen {
             DungeonRunHistory.clear();
 
             Minecraft.getInstance()
-                    .setScreen(
+                    .setScreenAndShow(
                             parent
                     );
 
@@ -248,7 +248,7 @@ public final class DungeonLootClearConfirmScreen extends Screen {
                 )
         ) {
             Minecraft.getInstance()
-                    .setScreen(
+                    .setScreenAndShow(
                             parent
                     );
 
@@ -264,7 +264,7 @@ public final class DungeonLootClearConfirmScreen extends Screen {
     @Override
     public void onClose() {
         Minecraft.getInstance()
-                .setScreen(
+                .setScreenAndShow(
                         parent
                 );
     }
